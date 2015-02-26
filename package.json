@@ -1,5 +1,5 @@
 {
-  "name": "taist-addon-bootstrap",
+  "name": "taist-wrike-reminders",
   "version": "0.0.1",
   "author": "Vladimir Rybakov",
   "description": "Taist bootstrap addon",
@@ -10,6 +10,7 @@
     "grunt-contrib-coffee": "*",
     "grunt-contrib-concat": "*",
     "grunt-contrib-copy": "*",
-    "grunt-contrib-watch": "*"
+    "grunt-contrib-watch": "*",
+    "react": "^0.12.2"
   }
 }

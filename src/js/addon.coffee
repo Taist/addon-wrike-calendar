@@ -1,6 +1,8 @@
 taistApi = null
-container = null
 reminder = null
+
+container = null
+reactContainer = null
 
 wrikeUtils = require './wrikeUtils'
 calendarUtils = require './calendarUtils'
@@ -10,13 +12,14 @@ start = (ta) ->
   window.app = app = require './app'
   app.api = taistApi = ta
 
+  container = $ '<span class="taist-reminders-container">'
+  reactContainer = $ '<div>'
+
   calendarUtils.init ->
     wrikeUtils.onCurrentTaskChange (task) -> draw task
     wrikeUtils.onCurrentTaskSave (updatedTask) -> updateReminderForTask updatedTask
 
 draw = (task) ->
-  removeRemindersContainer()
-
   if wrikeUtils.currentUserIsResponsibleForTask task
     reminder = new Reminder task
     if reminder.canBeSet()
@@ -52,13 +55,11 @@ drawAuthorization = ->
 drawRemindersContainer = ->
   taistApi.log 'drawing reminders container'
   taskDurationSpan = $('.wspace-task-settings-bar')
-  container = $ '<span class="taist-reminders-container"></span>'
-  taskDurationSpan.after container
 
-removeRemindersContainer = ->
-  if container?
-    container.remove()
-    container = null
+  taskDurationSpan.after reactContainer
+  require('./interface').renderReminder reactContainer[0]
+
+  taskDurationSpan.after container
 
 drawReminderEditControl = ->
   container.html ''
