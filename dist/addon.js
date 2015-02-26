@@ -1,50 +1,153 @@
-function init(){var require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"addon":[function(require,module,exports){
-var Reminder, calendarUtils, container, createCalendarSelect, createNotificationCheck, createTimeSelect, draw, drawAuthorization, drawReminderEditControl, drawReminderView, drawRemindersContainer, icons, reminder, removeRemindersContainer, start, taistApi, updateReminderForTask, wrikeUtils;
+function init(){var require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var app;
 
-taistApi = null;
-
-container = null;
-
-reminder = null;
-
-start = function(ta) {
-  taistApi = ta;
-  return calendarUtils.init(function() {
-    wrikeUtils.onCurrentTaskChange(function(task) {
-      return draw(task);
-    });
-    return wrikeUtils.onCurrentTaskSave(function(updatedTask) {
-      return updateReminderForTask(updatedTask);
-    });
-  });
+app = {
+  api: null
 };
 
-draw = function(task) {
-  removeRemindersContainer();
-  if (wrikeUtils.currentUserIsResponsibleForTask(task)) {
-    reminder = new Reminder(task);
-    if (reminder.canBeSet()) {
-      drawRemindersContainer();
-      if (!calendarUtils.authorized()) {
-        return drawAuthorization();
+module.exports = app;
+
+},{}],2:[function(require,module,exports){
+var app, calendarUtils;
+
+app = require('./app');
+
+calendarUtils = {
+  _client: null,
+  _auth: null,
+  _api: null,
+  _authorized: false,
+  init: function(callback) {
+    var jsonpCallbackName;
+    jsonpCallbackName = 'calendarUtilsInitAfterApiLoad';
+    window[jsonpCallbackName] = (function(_this) {
+      return function() {
+        delete window[jsonpCallbackName];
+        return _this._waitForGapiAndInit(callback);
+      };
+    })(this);
+    return $('body').append("<script src=\"https://apis.google.com/js/client.js?onload=" + jsonpCallbackName + "\"></script>");
+  },
+  _waitForGapiAndInit: function(callback) {
+    var gapi;
+    gapi = window["gapi"];
+    this._client = gapi.client;
+    this._auth = gapi.auth;
+    this._client.setApiKey('AIzaSyCLQdexpRph5rbV4L3V_9i0rXRRNiib304');
+    return window.setTimeout(((function(_this) {
+      return function() {
+        return _this._getExistingAuth(callback);
+      };
+    })(this)), 0);
+  },
+  _getExistingAuth: function(callback) {
+    return this._getAuth(true, callback);
+  },
+  authorize: function(callback) {
+    return this._getAuth(false, callback);
+  },
+  _getAuth: function(useExistingAuth, callback) {
+    var authOptions;
+    authOptions = {
+      client_id: '181733347279',
+      scope: 'https://www.googleapis.com/auth/calendar',
+      immediate: useExistingAuth
+    };
+    return this._auth.authorize(authOptions, (function(_this) {
+      return function(authResult) {
+        _this._authorized = authResult && (authResult.error == null);
+        if (_this._authorized) {
+          return _this._loadCalendarApi(callback);
+        } else {
+          return callback();
+        }
+      };
+    })(this));
+  },
+  _loadCalendarApi: function(callback) {
+    return this._client.load("calendar", "v3", (function(_this) {
+      return function() {
+        _this._api = _this._client["calendar"];
+        return callback();
+      };
+    })(this));
+  },
+  authorized: function() {
+    return this._authorized;
+  },
+  loadCalendars: function(callback) {
+    var request;
+    request = this._api["calendarList"].list({
+      minAccessRole: "writer",
+      showHidden: true
+    });
+    return request.then((function(_this) {
+      return function(response) {
+        return callback(response.result.items);
+      };
+    })(this));
+  },
+  getEvent: function(eventId, calendarId, callback) {
+    return this._accessEvent("get", {
+      calendarId: calendarId,
+      eventId: eventId
+    }, callback);
+  },
+  deleteEvent: function(eventId, calendarId, callback) {
+    return this._accessEvent("delete", {
+      calendarId: calendarId,
+      eventId: eventId
+    }, callback);
+  },
+  changeEvent: function(eventId, currentCalendarId, newCalendarId, eventData, callback) {
+    app.api.log("changing: ", arguments);
+    return this._accessEvent("update", {
+      resource: eventData,
+      calendarId: currentCalendarId,
+      eventId: eventId
+    }, (function(_this) {
+      return function(newEvent) {
+        if (currentCalendarId !== newCalendarId) {
+          return _this._moveEvent(eventId, currentCalendarId, newCalendarId, callback);
+        } else {
+          return callback(newEvent);
+        }
+      };
+    })(this));
+  },
+  createEvent: function(calendarId, eventData, callback) {
+    return this._accessEvent("insert", {
+      calendarId: calendarId,
+      resource: eventData
+    }, callback);
+  },
+  _moveEvent: function(eventId, currentCalendarId, newCalendarId, callback) {
+    app.api.log("moving: ", arguments);
+    return this._accessEvent("move", {
+      calendarId: currentCalendarId,
+      destination: newCalendarId,
+      eventId: eventId
+    }, callback);
+  },
+  _accessEvent: function(method, params, callback) {
+    return this._api.events[method](params).execute(function(eventOrResponse) {
+      if (eventOrResponse.error != null) {
+        return app.api.error("couldn't " + method + " event: ", params, eventOrResponse.error);
       } else {
-        return reminder.load(function() {
-          return drawReminderView();
-        });
+        return callback(eventOrResponse);
       }
-    }
-  }
-};
-
-updateReminderForTask = function(task) {
-  var reminderToUpdate;
-  if (calendarUtils.authorized()) {
-    reminderToUpdate = new Reminder(task);
-    return reminderToUpdate.load(function() {
-      return reminderToUpdate.updateForTask();
     });
   }
 };
+
+module.exports = calendarUtils;
+
+},{"./app":1}],3:[function(require,module,exports){
+var Reminder, app, calendarUtils;
+
+app = require('./app');
+
+calendarUtils = require('./calendarUtils');
 
 Reminder = (function() {
   Reminder._calendarsList = null;
@@ -86,10 +189,10 @@ Reminder = (function() {
 
   Reminder.prototype._loadReminderData = function(callback) {
     this._reminderData = null;
-    return taistApi.userData.get("defaultSettings", (function(_this) {
+    return app.api.userData.get("defaultSettings", (function(_this) {
       return function(error, defaultSettingsData) {
         _this._defaultSettings = defaultSettingsData;
-        return taistApi.userData.get(_this._task.data.id, function(error, existingReminderData) {
+        return app.api.userData.get(_this._task.data.id, function(error, existingReminderData) {
           var calendarId, eventId;
           eventId = existingReminderData != null ? existingReminderData.eventId : void 0;
           calendarId = existingReminderData != null ? existingReminderData.calendarId : void 0;
@@ -238,12 +341,12 @@ Reminder = (function() {
       calendarId: calendarId,
       reminders: newEvent.reminders
     };
-    return taistApi.userData.set(this._task.data.id, {
+    return app.api.userData.set(this._task.data.id, {
       eventId: newEvent.id,
       calendarId: calendarId
     }, (function(_this) {
       return function() {
-        return taistApi.userData.set("defaultSettings", _this._defaultSettings, function() {
+        return app.api.userData.set("defaultSettings", _this._defaultSettings, function() {
           return callback();
         });
       };
@@ -253,6 +356,153 @@ Reminder = (function() {
   return Reminder;
 
 })();
+
+module.exports = Reminder;
+
+},{"./app":1,"./calendarUtils":2}],4:[function(require,module,exports){
+var app, wrikeUtils;
+
+app = require('./app');
+
+wrikeUtils = {
+  me: function() {
+    return $wrike.user.getUid();
+  },
+  myTaskRoles: function(task) {
+    var condition, role, roleConditions;
+    roleConditions = {
+      owner: (function(_this) {
+        return function() {
+          return task.data['responsibleList'].indexOf(_this.me()) >= 0;
+        };
+      })(this),
+      author: (function(_this) {
+        return function() {
+          return (task.get('author')) === _this.me();
+        };
+      })(this)
+    };
+    return (function() {
+      var results;
+      results = [];
+      for (role in roleConditions) {
+        condition = roleConditions[role];
+        if (condition()) {
+          results.push(role);
+        }
+      }
+      return results;
+    })();
+  },
+  currentUserIsResponsibleForTask: function(task) {
+    return ((this.myTaskRoles(task)).indexOf('owner')) >= 0;
+  },
+  currentTaskView: function() {
+    var taskViewId;
+    taskViewId = $('.wspace-task-view').attr('id');
+    if (taskViewId != null) {
+      return window.Ext.ComponentMgr.get(taskViewId);
+    }
+  },
+  currentTask: function() {
+    var ref;
+    return (ref = this.currentTaskView()) != null ? ref['record'] : void 0;
+  },
+  onTaskViewRender: function(callback) {
+    var cb, currentTaskView, taskViewClass;
+    cb = function(taskView) {
+      return callback(taskView["record"], taskView);
+    };
+    taskViewClass = window.w2.folders.info.task.View;
+    app.api.aspect.before(taskViewClass, "showRecord", function() {
+      return cb(this);
+    });
+    currentTaskView = this.getCurrentTaskView();
+    if (currentTaskView != null) {
+      return cb(currentTaskView);
+    }
+  },
+  onCurrentTaskChange: function(callback) {
+    return app.api.wait.change(((function(_this) {
+      return function() {
+        return _this.currentTask();
+      };
+    })(this)), function(task) {
+      if (task != null) {
+        return app.api.wait.once((function() {
+          return task.data.title != null;
+        }), function() {
+          return callback(task);
+        });
+      }
+    });
+  },
+  onCurrentTaskSave: function(callback) {
+    return app.api.aspect.after($wrike.record.Base.prototype, 'getChanges', function() {
+      if (this === wrikeUtils.currentTask()) {
+        return callback(this);
+      }
+    });
+  }
+};
+
+module.exports = wrikeUtils;
+
+},{"./app":1}],"addon":[function(require,module,exports){
+var Reminder, calendarUtils, container, createCalendarSelect, createNotificationCheck, createTimeSelect, draw, drawAuthorization, drawReminderEditControl, drawReminderView, drawRemindersContainer, icons, reminder, removeRemindersContainer, start, taistApi, updateReminderForTask, wrikeUtils;
+
+taistApi = null;
+
+container = null;
+
+reminder = null;
+
+wrikeUtils = require('./wrikeUtils');
+
+calendarUtils = require('./calendarUtils');
+
+Reminder = require('./reminder');
+
+start = function(ta) {
+  var app;
+  window.app = app = require('./app');
+  app.api = taistApi = ta;
+  return calendarUtils.init(function() {
+    wrikeUtils.onCurrentTaskChange(function(task) {
+      return draw(task);
+    });
+    return wrikeUtils.onCurrentTaskSave(function(updatedTask) {
+      return updateReminderForTask(updatedTask);
+    });
+  });
+};
+
+draw = function(task) {
+  removeRemindersContainer();
+  if (wrikeUtils.currentUserIsResponsibleForTask(task)) {
+    reminder = new Reminder(task);
+    if (reminder.canBeSet()) {
+      drawRemindersContainer();
+      if (!calendarUtils.authorized()) {
+        return drawAuthorization();
+      } else {
+        return reminder.load(function() {
+          return drawReminderView();
+        });
+      }
+    }
+  }
+};
+
+updateReminderForTask = function(task) {
+  var reminderToUpdate;
+  if (calendarUtils.authorized()) {
+    reminderToUpdate = new Reminder(task);
+    return reminderToUpdate.load(function() {
+      return reminderToUpdate.updateForTask();
+    });
+  }
+};
 
 drawAuthorization = function() {
   var authButton;
@@ -401,216 +651,6 @@ drawReminderView = function() {
   return container.append(' (', deleteLink, ')');
 };
 
-calendarUtils = {
-  _client: null,
-  _auth: null,
-  _api: null,
-  _authorized: false,
-  init: function(callback) {
-    var jsonpCallbackName;
-    jsonpCallbackName = 'calendarUtilsInitAfterApiLoad';
-    window[jsonpCallbackName] = (function(_this) {
-      return function() {
-        delete window[jsonpCallbackName];
-        return _this._waitForGapiAndInit(callback);
-      };
-    })(this);
-    return $('body').append("<script src=\"https://apis.google.com/js/client.js?onload=" + jsonpCallbackName + "\"></script>");
-  },
-  _waitForGapiAndInit: function(callback) {
-    var gapi;
-    gapi = window["gapi"];
-    this._client = gapi.client;
-    this._auth = gapi.auth;
-    this._client.setApiKey('AIzaSyCLQdexpRph5rbV4L3V_9i0rXRRNiib304');
-    return window.setTimeout(((function(_this) {
-      return function() {
-        return _this._getExistingAuth(callback);
-      };
-    })(this)), 0);
-  },
-  _getExistingAuth: function(callback) {
-    return this._getAuth(true, callback);
-  },
-  authorize: function(callback) {
-    return this._getAuth(false, callback);
-  },
-  _getAuth: function(useExistingAuth, callback) {
-    var authOptions;
-    authOptions = {
-      client_id: '181733347279',
-      scope: 'https://www.googleapis.com/auth/calendar',
-      immediate: useExistingAuth
-    };
-    return this._auth.authorize(authOptions, (function(_this) {
-      return function(authResult) {
-        _this._authorized = authResult && (authResult.error == null);
-        if (_this._authorized) {
-          return _this._loadCalendarApi(callback);
-        } else {
-          return callback();
-        }
-      };
-    })(this));
-  },
-  _loadCalendarApi: function(callback) {
-    return this._client.load("calendar", "v3", (function(_this) {
-      return function() {
-        _this._api = _this._client["calendar"];
-        return callback();
-      };
-    })(this));
-  },
-  authorized: function() {
-    return this._authorized;
-  },
-  loadCalendars: function(callback) {
-    var request;
-    request = this._api["calendarList"].list({
-      minAccessRole: "writer",
-      showHidden: true
-    });
-    return request.then((function(_this) {
-      return function(response) {
-        return callback(response.result.items);
-      };
-    })(this));
-  },
-  getEvent: function(eventId, calendarId, callback) {
-    return this._accessEvent("get", {
-      calendarId: calendarId,
-      eventId: eventId
-    }, callback);
-  },
-  deleteEvent: function(eventId, calendarId, callback) {
-    return this._accessEvent("delete", {
-      calendarId: calendarId,
-      eventId: eventId
-    }, callback);
-  },
-  changeEvent: function(eventId, currentCalendarId, newCalendarId, eventData, callback) {
-    taistApi.log("changing: ", arguments);
-    return this._accessEvent("update", {
-      resource: eventData,
-      calendarId: currentCalendarId,
-      eventId: eventId
-    }, (function(_this) {
-      return function(newEvent) {
-        if (currentCalendarId !== newCalendarId) {
-          return _this._moveEvent(eventId, currentCalendarId, newCalendarId, callback);
-        } else {
-          return callback(newEvent);
-        }
-      };
-    })(this));
-  },
-  createEvent: function(calendarId, eventData, callback) {
-    return this._accessEvent("insert", {
-      calendarId: calendarId,
-      resource: eventData
-    }, callback);
-  },
-  _moveEvent: function(eventId, currentCalendarId, newCalendarId, callback) {
-    taistApi.log("moving: ", arguments);
-    return this._accessEvent("move", {
-      calendarId: currentCalendarId,
-      destination: newCalendarId,
-      eventId: eventId
-    }, callback);
-  },
-  _accessEvent: function(method, params, callback) {
-    return this._api.events[method](params).execute(function(eventOrResponse) {
-      if (eventOrResponse.error != null) {
-        return taistApi.error("couldn't " + method + " event: ", params, eventOrResponse.error);
-      } else {
-        return callback(eventOrResponse);
-      }
-    });
-  }
-};
-
-wrikeUtils = {
-  me: function() {
-    return $wrike.user.getUid();
-  },
-  myTaskRoles: function(task) {
-    var condition, role, roleConditions;
-    roleConditions = {
-      owner: (function(_this) {
-        return function() {
-          return task.data['responsibleList'].indexOf(_this.me()) >= 0;
-        };
-      })(this),
-      author: (function(_this) {
-        return function() {
-          return (task.get('author')) === _this.me();
-        };
-      })(this)
-    };
-    return (function() {
-      var results;
-      results = [];
-      for (role in roleConditions) {
-        condition = roleConditions[role];
-        if (condition()) {
-          results.push(role);
-        }
-      }
-      return results;
-    })();
-  },
-  currentUserIsResponsibleForTask: function(task) {
-    return ((this.myTaskRoles(task)).indexOf('owner')) >= 0;
-  },
-  currentTaskView: function() {
-    var taskViewId;
-    taskViewId = $('.wspace-task-view').attr('id');
-    if (taskViewId != null) {
-      return window.Ext.ComponentMgr.get(taskViewId);
-    }
-  },
-  currentTask: function() {
-    var ref;
-    return (ref = this.currentTaskView()) != null ? ref['record'] : void 0;
-  },
-  onTaskViewRender: function(callback) {
-    var cb, currentTaskView, taskViewClass;
-    cb = function(taskView) {
-      return callback(taskView["record"], taskView);
-    };
-    taskViewClass = window.w2.folders.info.task.View;
-    taistApi.aspect.before(taskViewClass, "showRecord", function() {
-      return cb(this);
-    });
-    currentTaskView = this.getCurrentTaskView();
-    if (currentTaskView != null) {
-      return cb(currentTaskView);
-    }
-  },
-  onCurrentTaskChange: function(callback) {
-    return taistApi.wait.change(((function(_this) {
-      return function() {
-        return _this.currentTask();
-      };
-    })(this)), function(task) {
-      if (task != null) {
-        return taistApi.wait.once((function() {
-          return task.data.title != null;
-        }), function() {
-          return callback(task);
-        });
-      }
-    });
-  },
-  onCurrentTaskSave: function(callback) {
-    return taistApi.aspect.after($wrike.record.Base.prototype, 'getChanges', function() {
-      if (this === wrikeUtils.currentTask()) {
-        return callback(this);
-      }
-    });
-  }
-};
-
 icons = {
   noReminder: '<img class="taist-reminders-reminder-icon" title="Add reminder" alt="Add reminder" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAACf2lUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNC40LjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iPgogICAgICAgICA8ZGM6dGl0bGU+CiAgICAgICAgICAgIDxyZGY6U2VxPgogICAgICAgICAgICAgICA8cmRmOmxpIHhtbDpsYW5nPSJ4LWRlZmF1bHQiPmdseXBoaWNvbnM8L3JkZjpsaT4KICAgICAgICAgICAgPC9yZGY6U2VxPgogICAgICAgICA8L2RjOnRpdGxlPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgICAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgICAgICAgICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIj4KICAgICAgICAgPHhtcDpDcmVhdG9yVG9vbD5BZG9iZSBQaG90b3Nob3AgQ1M2IChNYWNpbnRvc2gpPC94bXA6Q3JlYXRvclRvb2w+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgopxlZkAAAB0ElEQVRIDa1W23HCMBCMTf7jDqIOcDqgA1pwKsAMj2++GRigglBC6EAdBDogHUABQHYZiZHkkzFJNCMknXb3dHeycXK5XJ6atOFwuASuZ7Cr2WxWNuGlTUDE4CDKYt25tcXG5F4E4/E4P51OkyRJuq4IeJtWqzWZTqdb1x7Oax0MBoMCwh8hyV3D0ft8Pl+7NncedcCTn8/nL4B36G2XFM7TNH2LRRKtAdMCIYpr9NpmsCIm6oA5R/8Ey94cUYDGsD4uUHQwGo06BCG/mQuum1tOiBEdIPc5gN9wwLFRM5wKVnSAkHOI7zGqCiNiIEfaEh0AmIOwxfgqkSK2hxzUXsuIA5FTiSBWrIioZ5a4FQcolgLriJ557AYLw/WQ3pPc7/czvF/2KLA2BRbD9hT8xREPnVosFgdrvkVgxDU27Oaj4tR8wQE1tbhguznAxhJrhdNvcfrudfd3P22jdWUnZVkyLRqrNsQ3fxR3j7RDujqMgOEo7vyjOOUUepaiIHtMCnS+Of+rUaugtnSLOoiE/wUcGd29Yu+Q2gP+EzTrh7Ro9xbxjXm3s04hTrKFGK6fm+QEl2CCr4qei4VthXXp2qS5lyIJYG3ms6Uw63XTz5YfqiH1WdCp6QMAAAAASUVORK5CYII=" />',
   reminderExists: '<img class="taist-reminders-reminder-icon" title="Reminder set at" alt="Reminder set at" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAACf2lUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNC40LjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iPgogICAgICAgICA8ZGM6dGl0bGU+CiAgICAgICAgICAgIDxyZGY6U2VxPgogICAgICAgICAgICAgICA8cmRmOmxpIHhtbDpsYW5nPSJ4LWRlZmF1bHQiPmdseXBoaWNvbnM8L3JkZjpsaT4KICAgICAgICAgICAgPC9yZGY6U2VxPgogICAgICAgICA8L2RjOnRpdGxlPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgICAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgICAgICAgICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIj4KICAgICAgICAgPHhtcDpDcmVhdG9yVG9vbD5BZG9iZSBQaG90b3Nob3AgQ1M2IChNYWNpbnRvc2gpPC94bXA6Q3JlYXRvclRvb2w+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgopxlZkAAAB5klEQVRIDa1W3W3CMBC+Qy1UKlXpBM0G0A3YoCuEl/48wQiMAE+t+gIjtBtkg8IGdIJSCalVEFw/OxBwck5SqZYi+z5/9519PlthEaEqjR+aIxLpWy7zWJ5Xgyp+tSoky9lKkHKPxymoD7hsB3zX7BDJkJhuHQmhNyIeystq5uAZozAAxENimWR8XFO4hyBTFzxY3gB25SzvoM7xtQ8uykj4xreTgjNAWow4c6RIZiDLzWCJ6Q+Q5Pw1rRzVfQdmz+eIqwbgx4uu5TC3jriFw9Qnw1ID0HaDyqEPEjJ9tZb45Lh6AGII8wLlGeQ8vIDxyTdPAKycaQb6dd7Fi/wpQHFZ6jFUn9wOfIela7qo5psLQBuTd/5CebZc9wqW9XV5zk3m3lWL6usFxCOcAQKV3GBXCxYWFp8GMvlc7qfSHSTicYTK2U+qOd076r1cUj2OrNaOkAbAxAgrCFD7s9zLqav50HailUwzhS2kxawc6TBPcMG19yl68DnF9W6Nzn5wmBxY0v+JQ44Do12Tp+8F8h5S8iyj+5eGJ15Co61UUdxFiA5WgN6WatlhQ4yX4EbwmyEt0XEVoSKl9DPnlOVpWJZj7BNELW+N9ZDvz/sOscFj2AMHUwwnRcp8CiW/LRRagGla9bflF7nn2hBRMZnFAAAAAElFTkSuQmCC">'
@@ -620,5 +660,5 @@ module.exports = {
   start: start
 };
 
-},{}]},{},[]);
+},{"./app":1,"./calendarUtils":2,"./reminder":3,"./wrikeUtils":4}]},{},[]);
 ;return require("addon")}
