@@ -11,6 +11,8 @@
     "grunt-contrib-concat": "*",
     "grunt-contrib-copy": "*",
     "grunt-contrib-watch": "*",
-    "react": "^0.12.2"
+    "react": "^0.12.2",
+    "react-input-calendar": "^0.1.5",
+    "reactify": "^1.0.0"
   }
 }
