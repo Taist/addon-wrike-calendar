@@ -276,7 +276,7 @@ drawAuthorization = function() {
 drawRemindersContainer = function() {
   var taskDurationSpan;
   taistApi.log('drawing reminders container');
-  taskDurationSpan = $('.x-duration');
+  taskDurationSpan = $('.wspace-task-settings-bar');
   container = $('<span class="taist-reminders-container"></span>');
   return taskDurationSpan.after(container);
 };
@@ -368,7 +368,6 @@ createCalendarSelect = function(calendarsList, currentCalendarId) {
 
 drawReminderView = function() {
   var deleteLink, displayData, editLink, iconHtml, linkText;
-  console.log('started drawing');
   container.html('');
   linkText = null;
   iconHtml = null;
@@ -471,9 +470,9 @@ calendarUtils = {
       minAccessRole: "writer",
       showHidden: true
     });
-    return request.execute((function(_this) {
+    return request.then((function(_this) {
       return function(response) {
-        return callback(response.items);
+        return callback(response.result.items);
       };
     })(this));
   },

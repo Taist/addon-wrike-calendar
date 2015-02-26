@@ -14,6 +14,7 @@ draw = (task) ->
   if wrikeUtils.currentUserIsResponsibleForTask task
     reminder = new Reminder task
     if reminder.canBeSet()
+
       drawRemindersContainer()
 
       if not calendarUtils.authorized()
@@ -97,7 +98,15 @@ class Reminder
     for notification in currentSettings?.reminders?.overrides ? []
       usedNotifications[notification.method] = yes
 
-    return {hours, minutes, hoursRange, minutesRange, usedNotifications, calendars: Reminder._calendarsList, currentCalendar: currentSettings?.calendarId ? Reminder._calendarsList[0].id}
+    return {
+      hours,
+      minutes,
+      hoursRange,
+      minutesRange,
+      usedNotifications,
+      calendars: Reminder._calendarsList,
+      currentCalendar: currentSettings?.calendarId ? Reminder._calendarsList[0].id
+    }
 
   delete: (callback) ->
     if @exists()
@@ -169,7 +178,7 @@ drawAuthorization = ->
 
 drawRemindersContainer = ->
   taistApi.log 'drawing reminders container'
-  taskDurationSpan = $('.x-duration')
+  taskDurationSpan = $('.wspace-task-settings-bar')
   container = $ '<span class="taist-reminders-container"></span>'
   taskDurationSpan.after container
 
@@ -236,7 +245,6 @@ createCalendarSelect = (calendarsList, currentCalendarId) ->
   return calendarSelect
 
 drawReminderView = ->
-  console.log 'started drawing'
   container.html ''
   linkText = null
   iconHtml = null
@@ -317,7 +325,8 @@ calendarUtils =
       minAccessRole: "writer"
       showHidden: true
 
-    request.execute (response) => callback response.items
+    request.then (response) =>
+      callback response.result.items
 
   getEvent: (eventId, calendarId, callback) -> @_accessEvent "get", {calendarId, eventId}, callback
 
