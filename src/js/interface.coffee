@@ -1,5 +1,5 @@
 module.exports =
-  renderReminder: (container) ->
+  renderReminder: (container, reminder) ->
     React = require 'react'
     ReminderEditor = require './react/reminderEditor'
-    React.render ( ReminderEditor {} ), container
+    React.render ( ReminderEditor { reminder } ), container

@@ -49,7 +49,9 @@ calendarUtils =
       minAccessRole: "writer"
       showHidden: true
 
-    request.then (response) =>
+    request
+    .then (response) =>
+      console.log 'loadCalendars', response.result.items
       callback response.result.items
 
   getEvent: (eventId, calendarId, callback) -> @_accessEvent "get", {calendarId, eventId}, callback
@@ -71,10 +73,12 @@ calendarUtils =
     @_accessEvent "move", {calendarId: currentCalendarId, destination: newCalendarId, eventId}, callback
 
   _accessEvent: (method, params, callback) ->
-    @_api.events[method](params).execute (eventOrResponse) ->
-      if eventOrResponse.error?
+    # params.eventId = "duehudhueh"
+    @_api.events[method](params)
+    .then (response) ->
+      if response.error?
         app.api.error "couldn't #{method} event: ", params, eventOrResponse.error
       else
-        callback eventOrResponse
+        callback response.result
 
 module.exports = calendarUtils

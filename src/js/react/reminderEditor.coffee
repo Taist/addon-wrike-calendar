@@ -11,6 +11,9 @@ ReminderEditor = React.createFactory React.createClass
     console.log 'New date is', newDate
 
   render: ->
+    reminderData = @props.reminder.getDisplayData()
+    console.log 'render', reminderData
+
     div {},
       Calendar {
         format: "DD.MM.YYYY"
@@ -19,6 +22,6 @@ ReminderEditor = React.createFactory React.createClass
         closeOnSelect: true
       }
       div { style: display: 'inline-block' },
-        TimeIntervalSelector {}
+        TimeIntervalSelector { startTime: reminderData.startTime, endTime: reminderData.endTime }
 
 module.exports = ReminderEditor

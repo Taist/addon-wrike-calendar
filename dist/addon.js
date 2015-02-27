@@ -83,6 +83,7 @@ calendarUtils = {
     });
     return request.then((function(_this) {
       return function(response) {
+        console.log('loadCalendars', response.result.items);
         return callback(response.result.items);
       };
     })(this));
@@ -130,11 +131,11 @@ calendarUtils = {
     }, callback);
   },
   _accessEvent: function(method, params, callback) {
-    return this._api.events[method](params).execute(function(eventOrResponse) {
-      if (eventOrResponse.error != null) {
+    return this._api.events[method](params).then(function(response) {
+      if (response.error != null) {
         return app.api.error("couldn't " + method + " event: ", params, eventOrResponse.error);
       } else {
-        return callback(eventOrResponse);
+        return callback(response.result);
       }
     });
   }
@@ -144,11 +145,13 @@ module.exports = calendarUtils;
 
 },{"./app":1}],3:[function(require,module,exports){
 module.exports = {
-  renderReminder: function(container) {
+  renderReminder: function(container, reminder) {
     var React, ReminderEditor;
     React = require('react');
     ReminderEditor = require('./react/reminderEditor');
-    return React.render(ReminderEditor({}), container);
+    return React.render(ReminderEditor({
+      reminder: reminder
+    }), container);
   }
 };
 
@@ -163,8 +166,12 @@ TimeSelector = require('./timeSelector');
 
 TimeIntervalSelector = React.createFactory(React.createClass({
   render: function() {
-    return span({}, TimeSelector({}), TimeSelector({
-      stopTime: '17:00'
+    return span({}, TimeSelector({
+      currentValue: this.props.startTime
+    }), TimeSelector({
+      currentValue: this.props.endTime,
+      startTime: this.props.startTime,
+      duration: true
     }));
   }
 }));
@@ -187,6 +194,9 @@ ReminderEditor = React.createFactory(React.createClass({
     return console.log('New date is', newDate);
   },
   render: function() {
+    var reminderData;
+    reminderData = this.props.reminder.getDisplayData();
+    console.log('render', reminderData);
     return div({}, Calendar({
       format: "DD.MM.YYYY",
       date: new Date,
@@ -196,7 +206,10 @@ ReminderEditor = React.createFactory(React.createClass({
       style: {
         display: 'inline-block'
       }
-    }, TimeIntervalSelector({})));
+    }, TimeIntervalSelector({
+      startTime: reminderData.startTime,
+      endTime: reminderData.endTime
+    })));
   }
 }));
 
@@ -214,14 +227,14 @@ TimeSelector = React.createFactory(React.createClass({
   getInitialState: function() {
     return {
       startTime: 0,
-      stopTime: "23:59"
+      endTime: "23:59"
     };
   },
   updateState: function(props) {
     return this.setState({
       startTime: props.startTime,
-      stopTime: props.stopTime,
-      currentValue: props.currentValue || props.startTime
+      endTime: props.endTime,
+      currentValue: this.timeStringToMinutes(props.currentValue || props.startTime)
     });
   },
   componentWillMount: function() {
@@ -232,6 +245,9 @@ TimeSelector = React.createFactory(React.createClass({
   },
   timeStringToMinutes: function(time) {
     var hours, minutes, parts;
+    if (time == null) {
+      time = "";
+    }
     parts = time.toString().match(/^(\d{1,2})(\D(\d{2}))?/);
     if (!parts) {
       return 0;
@@ -246,20 +262,30 @@ TimeSelector = React.createFactory(React.createClass({
     }
     return (Math.floor(minutes / 60)) + ":" + (minutes % 60 < 10 ? 0 : '') + (minutes % 60);
   },
+  minutesToDuration: function(minutes) {
+    var duration;
+    if (minutes == null) {
+      minutes = 0;
+    }
+    duration = minutes < 60 ? minutes + " mins" : minutes === 60 ? "1 hr" : (parseFloat((minutes / 60).toFixed(1))) + " hrs";
+    return " (" + duration + ")";
+  },
   generateOptions: function() {
     var i, min, ref1, ref2, ref3, results, startMinutes, stopMinutes;
     startMinutes = this.timeStringToMinutes(this.state.startTime || 0);
-    stopMinutes = this.timeStringToMinutes(this.state.stopTime || "23:59");
+    stopMinutes = this.timeStringToMinutes(this.state.endTime || "23:59");
     results = [];
     for (min = i = ref1 = startMinutes, ref2 = stopMinutes, ref3 = this.minimalInterval; ref3 > 0 ? i <= ref2 : i >= ref2; min = i += ref3) {
       results.push(option({
         value: min
-      }, this.minutesToTimeString(min)));
+      }, "" + (this.minutesToTimeString(min)) + (this.props.duration ? this.minutesToDuration(min - startMinutes) : '')));
     }
     return results;
   },
   render: function() {
-    return select({}, this.generateOptions());
+    return select({
+      value: this.state.currentValue
+    }, this.generateOptions());
   }
 }));
 
@@ -353,14 +379,14 @@ Reminder = (function() {
   };
 
   Reminder.prototype.getDisplayData = function() {
-    var addLeadingZero, currentSettings, hours, hoursRange, i, len, minutes, minutesRange, notification, ref, ref1, ref2, ref3, ref4, reminderTime, usedNotifications;
+    var addLeadingZero, currentSettings, endDate, endTime, hours, hoursRange, i, len, minutes, minutesRange, notification, ref, ref1, ref2, ref3, ref4, ref5, reminderTime, startTime, usedNotifications;
     ref = this.exists() ? (addLeadingZero = function(number) {
       if (number < 10) {
         return "0" + number;
       } else {
         return number;
       }
-    }, reminderTime = new Date(this._reminderData.event.start.dateTime), [addLeadingZero(reminderTime.getHours()), addLeadingZero(reminderTime.getMinutes())]) : ['08', '00'], hours = ref[0], minutes = ref[1];
+    }, reminderTime = new Date(this._reminderData.event.start.dateTime), startTime = (reminderTime.getHours()) + ":" + (reminderTime.getMinutes()), endDate = new Date(this._reminderData.event.end.dateTime), endTime = (endDate.getHours()) + ":" + (endDate.getMinutes()), [addLeadingZero(reminderTime.getHours()), addLeadingZero(reminderTime.getMinutes())]) : ['08', '00'], hours = ref[0], minutes = ref[1];
     hoursRange = ['06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'];
     minutesRange = ['00', '15', '30', '45'];
     currentSettings = this._reminderData != null ? {
@@ -380,7 +406,9 @@ Reminder = (function() {
       minutesRange: minutesRange,
       usedNotifications: usedNotifications,
       calendars: Reminder._calendarsList,
-      currentCalendar: (ref4 = currentSettings != null ? currentSettings.calendarId : void 0) != null ? ref4 : Reminder._calendarsList[0].id
+      currentCalendar: (ref4 = currentSettings != null ? currentSettings.calendarId : void 0) != null ? ref4 : (ref5 = Reminder._calendarsList) != null ? ref5[0].id : void 0,
+      startTime: startTime,
+      endTime: endTime
     };
   };
 
@@ -24654,7 +24682,6 @@ drawRemindersContainer = function() {
   taistApi.log('drawing reminders container');
   taskDurationSpan = $('.wspace-task-settings-bar');
   taskDurationSpan.after(reactContainer);
-  require('./interface').renderReminder(reactContainer[0]);
   return taskDurationSpan.after(container);
 };
 
@@ -24743,6 +24770,7 @@ drawReminderView = function() {
   iconHtml = null;
   if (reminder.exists()) {
     displayData = reminder.getDisplayData();
+    require('./interface').renderReminder(reactContainer[0], reminder);
     iconHtml = icons.reminderExists;
     linkText = "<span class=\"taist-reminders-linkText\">" + displayData.hours + ":" + displayData.minutes;
   } else {

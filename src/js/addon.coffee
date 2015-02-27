@@ -57,7 +57,6 @@ drawRemindersContainer = ->
   taskDurationSpan = $('.wspace-task-settings-bar')
 
   taskDurationSpan.after reactContainer
-  require('./interface').renderReminder reactContainer[0]
 
   taskDurationSpan.after container
 
@@ -126,6 +125,8 @@ drawReminderView = ->
   if reminder.exists()
     displayData = reminder.getDisplayData()
 
+    require('./interface').renderReminder reactContainer[0], reminder
+  
     iconHtml = icons.reminderExists
     linkText = """<span class="taist-reminders-linkText">#{displayData.hours}:#{displayData.minutes}"""
   else

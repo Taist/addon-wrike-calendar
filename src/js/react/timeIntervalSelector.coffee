@@ -7,7 +7,7 @@ TimeSelector = require './timeSelector'
 TimeIntervalSelector = React.createFactory React.createClass
   render: () ->
     span {},
-      TimeSelector { }
-      TimeSelector { stopTime: '17:00' }
+      TimeSelector { currentValue: @props.startTime }
+      TimeSelector { currentValue: @props.endTime, startTime: @props.startTime, duration: true }
 
 module.exports = TimeIntervalSelector

@@ -7,13 +7,13 @@ TimeSelector = React.createFactory React.createClass
 
   getInitialState: () ->
     startTime: 0
-    stopTime: "23:59"
+    endTime: "23:59"
 
   updateState: (props) ->
     @setState
       startTime: props.startTime
-      stopTime: props.stopTime
-      currentValue: props.currentValue or props.startTime
+      endTime: props.endTime
+      currentValue: @timeStringToMinutes( props.currentValue or props.startTime )
 
   componentWillMount: () ->
     @updateState @props
@@ -21,7 +21,7 @@ TimeSelector = React.createFactory React.createClass
   componentWillReceiveProps: ( nextProps ) ->
     @updateState nextProps
 
-  timeStringToMinutes: (time) ->
+  timeStringToMinutes: ( time = "" ) ->
     parts = time.toString().match /^(\d{1,2})(\D(\d{2}))?/
 
     unless parts
@@ -32,17 +32,29 @@ TimeSelector = React.createFactory React.createClass
 
     hours * 60 + minutes - minutes % @minimalInterval
 
-  minutesToTimeString: (minutes = 0) ->
+  minutesToTimeString: ( minutes = 0 ) ->
     "#{Math.floor(minutes / 60)}:#{if minutes % 60 < 10 then 0 else ''}#{minutes % 60}"
+
+  minutesToDuration: ( minutes = 0 ) ->
+    duration = if minutes < 60
+      "#{minutes} mins"
+    else if minutes is 60
+      "1 hr"
+    else
+      "#{ parseFloat (minutes/60).toFixed(1) } hrs"
+
+    " (#{duration})"
+
 
   generateOptions: ->
     startMinutes = @timeStringToMinutes( @state.startTime or 0 )
-    stopMinutes = @timeStringToMinutes( @state.stopTime or "23:59" )
+    stopMinutes = @timeStringToMinutes( @state.endTime or "23:59" )
 
     for min in [startMinutes..stopMinutes] by @minimalInterval
-     option { value: min }, @minutesToTimeString min
+      option { value: min },
+        "#{@minutesToTimeString min}#{if @props.duration then @minutesToDuration(min - startMinutes) else ''}"
 
   render: ->
-    select {}, @generateOptions()
+    select { value: @state.currentValue }, @generateOptions()
 
 module.exports = TimeSelector
