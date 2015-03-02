@@ -126,7 +126,7 @@ drawReminderView = ->
     displayData = reminder.getDisplayData()
 
     require('./interface').renderReminder reactContainer[0], reminder
-  
+
     iconHtml = icons.reminderExists
     linkText = """<span class="taist-reminders-linkText">#{displayData.hours}:#{displayData.minutes}"""
   else
@@ -140,6 +140,8 @@ drawReminderView = ->
   editLink.append iconHtml, linkText
 
   container.append editLink
+
+  console.log 'rendering finished'
 
   if reminder.exists()
     deleteLink = $ '<a></a>',

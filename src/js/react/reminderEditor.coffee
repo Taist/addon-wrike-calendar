@@ -4,7 +4,8 @@ React = require 'react'
 
 Calendar = require 'react-input-calendar'
 
-TimeIntervalSelector = require './TimeIntervalSelector'
+TimeIntervalSelector = require './timeIntervalSelector'
+TimeDuration = require './timeDuration'
 
 ReminderEditor = React.createFactory React.createClass
   reminderMethods: [ 'popup', 'email', 'sms' ]
@@ -20,8 +21,8 @@ ReminderEditor = React.createFactory React.createClass
       currentCalendar: reminderData.currentCalendar
       startTime: reminderData.startTime
       endTime: reminderData.endTime
-      reminderMethod: reminderData.method or @reminderMethods[0]
-      reminderMinutes: reminderData.minutes or 10
+      reminderMethod: reminderData.reminderMethod or @reminderMethods[0]
+      reminderMinutes: reminderData.reminderMinutes or 1440
       startDate: reminderData.startDate
 
   componentWillMount: () ->
@@ -63,5 +64,9 @@ ReminderEditor = React.createFactory React.createClass
       select { value: @state.reminderMethod, onChange: @onChangeMethod },
         @reminderMethods.map (m) ->
           option { key: m, value: m }, m
+
+      div { style: display: 'inline-block' },
+        TimeDuration { minutes: @state.reminderMinutes }
+
 
 module.exports = ReminderEditor
