@@ -20,7 +20,7 @@ TimeIntervalSelector = React.createFactory React.createClass
     interval =
       startTime: @state.startTime
       endTime: @state.endTime
-    console.log interval
+    @props.onChange?(interval)
 
   onStartChange: (startTime) ->
     endTime = @state.endTime

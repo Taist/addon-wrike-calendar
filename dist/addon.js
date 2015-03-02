@@ -178,12 +178,12 @@ TimeIntervalSelector = React.createFactory(React.createClass({
     return this.updateState(nextProps);
   },
   onChange: function() {
-    var interval;
+    var base, interval;
     interval = {
       startTime: this.state.startTime,
       endTime: this.state.endTime
     };
-    return console.log(interval);
+    return typeof (base = this.props).onChange === "function" ? base.onChange(interval) : void 0;
   },
   onStartChange: function(startTime) {
     var endTime;
@@ -229,12 +229,23 @@ Calendar = require('react-input-calendar');
 TimeIntervalSelector = require('./TimeIntervalSelector');
 
 ReminderEditor = React.createFactory(React.createClass({
-  onChangeDate: function(newDate) {
-    return console.log('New date is', newDate);
+  reminderMethods: ['popup', 'email', 'sms'],
+  onChangeDate: function(startDate) {
+    this.setState({
+      startDate: startDate
+    });
+    return console.log('New date is', startDate);
   },
   updateState: function(props) {
+    var reminderData;
+    reminderData = this.props.reminder.getDisplayData();
     return this.setState({
-      currentCalendar: props.reminder.getDisplayData().currentCalendar
+      currentCalendar: reminderData.currentCalendar,
+      startTime: reminderData.startTime,
+      endTime: reminderData.endTime,
+      reminderMethod: reminderData.method || this.reminderMethods[0],
+      reminderMinutes: reminderData.minutes || 10,
+      startDate: reminderData.startDate
     });
   },
   componentWillMount: function() {
@@ -243,14 +254,26 @@ ReminderEditor = React.createFactory(React.createClass({
   componentWillReceiveProps: function(nextProps) {
     return this.updateState(nextProps);
   },
+  onChangeTimeInterval: function(interval) {
+    console.log('onChangeTimeInterval', interval);
+    return this.setState(interval);
+  },
+  onChangeCalendar: function(event) {
+    return this.setState({
+      currentCalendar: event.target.value
+    });
+  },
+  onChangeMethod: function(event) {
+    return this.setState({
+      reminderMethod: event.target.value
+    });
+  },
   render: function() {
     var reminderData;
     reminderData = this.props.reminder.getDisplayData();
-    console.log('render', reminderData);
-    console.log(this.state.currentCalendar);
     return div({}, Calendar({
-      format: "DD.MM.YYYY",
-      date: new Date,
+      format: "MM-DD-YYYY",
+      date: this.state.startDate,
       onChange: this.onChangeDate,
       closeOnSelect: true
     }), div({
@@ -258,15 +281,25 @@ ReminderEditor = React.createFactory(React.createClass({
         display: 'inline-block'
       }
     }, TimeIntervalSelector({
-      startTime: reminderData.startTime,
-      endTime: reminderData.endTime
+      startTime: this.state.startTime,
+      endTime: this.state.endTime,
+      onChange: this.onChangeTimeInterval
     })), select({
-      value: this.state.currentCalendar
+      value: this.state.currentCalendar,
+      onChange: this.onChangeCalendar
     }, reminderData.calendars.map(function(c) {
       return option({
         key: c.id,
         value: c.id
       }, c.summary);
+    })), select({
+      value: this.state.reminderMethod,
+      onChange: this.onChangeMethod
+    }, this.reminderMethods.map(function(m) {
+      return option({
+        key: m,
+        value: m
+      }, m);
     })));
   }
 }));
@@ -447,14 +480,14 @@ Reminder = (function() {
   };
 
   Reminder.prototype.getDisplayData = function() {
-    var addLeadingZero, currentSettings, endDate, endTime, hours, hoursRange, i, len, minutes, minutesRange, notification, ref, ref1, ref2, ref3, ref4, reminderTime, startTime, usedNotifications;
+    var addLeadingZero, currentSettings, endDate, endTime, hours, hoursRange, i, len, minutes, minutesRange, notification, ref, ref1, ref2, ref3, ref4, startDate, startTime, usedNotifications;
     ref = this.exists() ? (addLeadingZero = function(number) {
       if (number < 10) {
         return "0" + number;
       } else {
         return number;
       }
-    }, reminderTime = new Date(this._reminderData.event.start.dateTime), startTime = (reminderTime.getHours()) + ":" + (addLeadingZero(reminderTime.getMinutes())), endDate = new Date(this._reminderData.event.end.dateTime), endTime = (endDate.getHours()) + ":" + (addLeadingZero(endDate.getMinutes())), [addLeadingZero(reminderTime.getHours()), addLeadingZero(reminderTime.getMinutes())]) : ['08', '00'], hours = ref[0], minutes = ref[1];
+    }, startDate = new Date(this._reminderData.event.start.dateTime), startTime = (startDate.getHours()) + ":" + (addLeadingZero(startDate.getMinutes())), endDate = new Date(this._reminderData.event.end.dateTime), endTime = (endDate.getHours()) + ":" + (addLeadingZero(endDate.getMinutes())), [addLeadingZero(startDate.getHours()), addLeadingZero(startDate.getMinutes())]) : ['08', '00'], hours = ref[0], minutes = ref[1];
     hoursRange = ['06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'];
     minutesRange = ['00', '15', '30', '45'];
     currentSettings = this._reminderData != null ? {
@@ -476,6 +509,7 @@ Reminder = (function() {
       usedNotifications: usedNotifications,
       calendars: Reminder._calendarsList,
       currentCalendar: (currentSettings != null ? currentSettings.calendarId : void 0) || ((ref4 = Reminder._calendarsList) != null ? ref4[0].id : void 0),
+      startDate: startDate,
       startTime: startTime,
       endTime: endTime
     };

@@ -55,13 +55,13 @@ class Reminder
     if @exists()
       addLeadingZero = (number) -> if number < 10 then "0" + number else number
 
-      reminderTime = new Date @_reminderData.event.start.dateTime
-      startTime = "#{reminderTime.getHours()}:#{addLeadingZero reminderTime.getMinutes()}"
+      startDate = new Date @_reminderData.event.start.dateTime
+      startTime = "#{startDate.getHours()}:#{addLeadingZero startDate.getMinutes()}"
 
       endDate = new Date @_reminderData.event.end.dateTime
       endTime = "#{endDate.getHours()}:#{addLeadingZero endDate.getMinutes()}"
 
-      [(addLeadingZero reminderTime.getHours()), (addLeadingZero reminderTime.getMinutes())]
+      [(addLeadingZero startDate.getHours()), (addLeadingZero startDate.getMinutes())]
     else
       ['08', '00']
 
@@ -90,6 +90,7 @@ class Reminder
       calendars: Reminder._calendarsList,
       currentCalendar: currentSettings?.calendarId or Reminder._calendarsList?[0].id,
 
+      startDate,
       startTime,
       endTime
     }
