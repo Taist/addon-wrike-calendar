@@ -45,6 +45,10 @@ TimeSelector = React.createFactory React.createClass
 
     " (#{duration})"
 
+  onChange: (event) ->
+    currentValue = @minutesToTimeString event.target.value
+    @setState { currentValue }
+    @props.onChange?( currentValue )
 
   generateOptions: ->
     startMinutes = @timeStringToMinutes( @state.startTime or 0 )
@@ -55,6 +59,6 @@ TimeSelector = React.createFactory React.createClass
         "#{@minutesToTimeString min}#{if @props.duration then @minutesToDuration(min - startMinutes) else ''}"
 
   render: ->
-    select { value: @state.currentValue }, @generateOptions()
+    select { value: @state.currentValue, onChange: @onChange }, @generateOptions()
 
 module.exports = TimeSelector

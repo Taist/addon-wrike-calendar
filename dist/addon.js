@@ -165,13 +165,52 @@ span = React.DOM.span;
 TimeSelector = require('./timeSelector');
 
 TimeIntervalSelector = React.createFactory(React.createClass({
+  updateState: function(props) {
+    return this.setState({
+      startTime: props.startTime,
+      endTime: props.endTime
+    });
+  },
+  componentWillMount: function() {
+    return this.updateState(this.props);
+  },
+  componentWillReceiveProps: function(nextProps) {
+    return this.updateState(nextProps);
+  },
+  onChange: function() {
+    var interval;
+    interval = {
+      startTime: this.state.startTime,
+      endTime: this.state.endTime
+    };
+    return console.log(interval);
+  },
+  onStartChange: function(startTime) {
+    var endTime;
+    endTime = this.state.endTime;
+    if (startTime.length >= endTime.length && startTime > endTime) {
+      this.setState({
+        endTime: startTime
+      });
+    }
+    return this.setState({
+      startTime: startTime
+    }, this.onChange);
+  },
+  onEndChange: function(endTime) {
+    return this.setState({
+      endTime: endTime
+    }, this.onChange);
+  },
   render: function() {
     return span({}, TimeSelector({
-      currentValue: this.props.startTime
+      currentValue: this.state.startTime,
+      onChange: this.onStartChange
     }), TimeSelector({
-      currentValue: this.props.endTime,
-      startTime: this.props.startTime,
-      duration: true
+      currentValue: this.state.endTime,
+      startTime: this.state.startTime,
+      duration: true,
+      onChange: this.onEndChange
     }));
   }
 }));
@@ -179,11 +218,11 @@ TimeIntervalSelector = React.createFactory(React.createClass({
 module.exports = TimeIntervalSelector;
 
 },{"./timeSelector":6,"react":182}],5:[function(require,module,exports){
-var Calendar, React, ReminderEditor, TimeIntervalSelector, div;
+var Calendar, React, ReminderEditor, TimeIntervalSelector, div, option, ref, select;
 
 React = require('react');
 
-div = React.DOM.div;
+ref = React.DOM, div = ref.div, select = ref.select, option = ref.option;
 
 Calendar = require('react-input-calendar');
 
@@ -193,10 +232,22 @@ ReminderEditor = React.createFactory(React.createClass({
   onChangeDate: function(newDate) {
     return console.log('New date is', newDate);
   },
+  updateState: function(props) {
+    return this.setState({
+      currentCalendar: props.reminder.getDisplayData().currentCalendar
+    });
+  },
+  componentWillMount: function() {
+    return this.updateState(this.props);
+  },
+  componentWillReceiveProps: function(nextProps) {
+    return this.updateState(nextProps);
+  },
   render: function() {
     var reminderData;
     reminderData = this.props.reminder.getDisplayData();
     console.log('render', reminderData);
+    console.log(this.state.currentCalendar);
     return div({}, Calendar({
       format: "DD.MM.YYYY",
       date: new Date,
@@ -209,6 +260,13 @@ ReminderEditor = React.createFactory(React.createClass({
     }, TimeIntervalSelector({
       startTime: reminderData.startTime,
       endTime: reminderData.endTime
+    })), select({
+      value: this.state.currentCalendar
+    }, reminderData.calendars.map(function(c) {
+      return option({
+        key: c.id,
+        value: c.id
+      }, c.summary);
     })));
   }
 }));
@@ -270,6 +328,14 @@ TimeSelector = React.createFactory(React.createClass({
     duration = minutes < 60 ? minutes + " mins" : minutes === 60 ? "1 hr" : (parseFloat((minutes / 60).toFixed(1))) + " hrs";
     return " (" + duration + ")";
   },
+  onChange: function(event) {
+    var base, currentValue;
+    currentValue = this.minutesToTimeString(event.target.value);
+    this.setState({
+      currentValue: currentValue
+    });
+    return typeof (base = this.props).onChange === "function" ? base.onChange(currentValue) : void 0;
+  },
   generateOptions: function() {
     var i, min, ref1, ref2, ref3, results, startMinutes, stopMinutes;
     startMinutes = this.timeStringToMinutes(this.state.startTime || 0);
@@ -284,7 +350,8 @@ TimeSelector = React.createFactory(React.createClass({
   },
   render: function() {
     return select({
-      value: this.state.currentValue
+      value: this.state.currentValue,
+      onChange: this.onChange
     }, this.generateOptions());
   }
 }));
@@ -343,6 +410,7 @@ Reminder = (function() {
         _this._defaultSettings = defaultSettingsData;
         return app.api.userData.get(_this._task.data.id, function(error, existingReminderData) {
           var calendarId, eventId;
+          console.log('existingReminderData', existingReminderData);
           eventId = existingReminderData != null ? existingReminderData.eventId : void 0;
           calendarId = existingReminderData != null ? existingReminderData.calendarId : void 0;
           if ((eventId == null) || (calendarId == null)) {
@@ -379,18 +447,18 @@ Reminder = (function() {
   };
 
   Reminder.prototype.getDisplayData = function() {
-    var addLeadingZero, currentSettings, endDate, endTime, hours, hoursRange, i, len, minutes, minutesRange, notification, ref, ref1, ref2, ref3, ref4, ref5, reminderTime, startTime, usedNotifications;
+    var addLeadingZero, currentSettings, endDate, endTime, hours, hoursRange, i, len, minutes, minutesRange, notification, ref, ref1, ref2, ref3, ref4, reminderTime, startTime, usedNotifications;
     ref = this.exists() ? (addLeadingZero = function(number) {
       if (number < 10) {
         return "0" + number;
       } else {
         return number;
       }
-    }, reminderTime = new Date(this._reminderData.event.start.dateTime), startTime = (reminderTime.getHours()) + ":" + (reminderTime.getMinutes()), endDate = new Date(this._reminderData.event.end.dateTime), endTime = (endDate.getHours()) + ":" + (endDate.getMinutes()), [addLeadingZero(reminderTime.getHours()), addLeadingZero(reminderTime.getMinutes())]) : ['08', '00'], hours = ref[0], minutes = ref[1];
+    }, reminderTime = new Date(this._reminderData.event.start.dateTime), startTime = (reminderTime.getHours()) + ":" + (addLeadingZero(reminderTime.getMinutes())), endDate = new Date(this._reminderData.event.end.dateTime), endTime = (endDate.getHours()) + ":" + (addLeadingZero(endDate.getMinutes())), [addLeadingZero(reminderTime.getHours()), addLeadingZero(reminderTime.getMinutes())]) : ['08', '00'], hours = ref[0], minutes = ref[1];
     hoursRange = ['06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'];
     minutesRange = ['00', '15', '30', '45'];
     currentSettings = this._reminderData != null ? {
-      calendardId: this._reminderData.calendarId,
+      calendarId: this._reminderData.calendarId,
       reminders: this._reminderData.event.reminders
     } : this._defaultSettings;
     usedNotifications = {};
@@ -399,6 +467,7 @@ Reminder = (function() {
       notification = ref3[i];
       usedNotifications[notification.method] = true;
     }
+    console.log(this._reminderData);
     return {
       hours: hours,
       minutes: minutes,
@@ -406,7 +475,7 @@ Reminder = (function() {
       minutesRange: minutesRange,
       usedNotifications: usedNotifications,
       calendars: Reminder._calendarsList,
-      currentCalendar: (ref4 = currentSettings != null ? currentSettings.calendarId : void 0) != null ? ref4 : (ref5 = Reminder._calendarsList) != null ? ref5[0].id : void 0,
+      currentCalendar: (currentSettings != null ? currentSettings.calendarId : void 0) || ((ref4 = Reminder._calendarsList) != null ? ref4[0].id : void 0),
       startTime: startTime,
       endTime: endTime
     };

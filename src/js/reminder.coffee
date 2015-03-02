@@ -27,6 +27,9 @@ class Reminder
     app.api.userData.get "defaultSettings", (error, defaultSettingsData) =>
       @_defaultSettings = defaultSettingsData
       app.api.userData.get @_task.data.id, (error, existingReminderData) =>
+
+        console.log 'existingReminderData', existingReminderData
+
         eventId = existingReminderData?.eventId
         calendarId = existingReminderData?.calendarId
 
@@ -53,11 +56,10 @@ class Reminder
       addLeadingZero = (number) -> if number < 10 then "0" + number else number
 
       reminderTime = new Date @_reminderData.event.start.dateTime
-
-      startTime = "#{reminderTime.getHours()}:#{reminderTime.getMinutes()}"
+      startTime = "#{reminderTime.getHours()}:#{addLeadingZero reminderTime.getMinutes()}"
 
       endDate = new Date @_reminderData.event.end.dateTime
-      endTime = "#{endDate.getHours()}:#{endDate.getMinutes()}"
+      endTime = "#{endDate.getHours()}:#{addLeadingZero endDate.getMinutes()}"
 
       [(addLeadingZero reminderTime.getHours()), (addLeadingZero reminderTime.getMinutes())]
     else
@@ -69,13 +71,15 @@ class Reminder
 
     currentSettings =
       if @_reminderData?
-        calendardId: @_reminderData.calendarId
+        calendarId: @_reminderData.calendarId
         reminders: @_reminderData.event.reminders
       else @_defaultSettings
 
     usedNotifications = {}
     for notification in currentSettings?.reminders?.overrides ? []
       usedNotifications[notification.method] = yes
+
+    console.log @_reminderData
 
     return {
       hours,
@@ -84,7 +88,7 @@ class Reminder
       minutesRange,
       usedNotifications,
       calendars: Reminder._calendarsList,
-      currentCalendar: currentSettings?.calendarId ? Reminder._calendarsList?[0].id,
+      currentCalendar: currentSettings?.calendarId or Reminder._calendarsList?[0].id,
 
       startTime,
       endTime
