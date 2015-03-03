@@ -41,8 +41,6 @@ TimeDuration = React.createFactory React.createClass
     @onChange event.target.value, @state.quantity
 
   render: ->
-    console.log @props
-
     div {},
       input {
         value: @state.number
@@ -51,6 +49,7 @@ TimeDuration = React.createFactory React.createClass
         style:
           textAlign: 'right'
           width: 40
+          marginRight: 4
       }
 
       select { value: @state.quantity, onChange: @onChangeQuantity },

@@ -16,8 +16,6 @@
 }
 
 .input-calendar {
-		font-family: 'Pontano Sans', sans-serif;
-		width: 175px;
 		position: relative;
 		display: inline-block;
 }
@@ -43,12 +41,7 @@
 }
 
 .input-calendar .input-calendar-value {
-		width: 120px;
-		border: 1px solid #ccc;
-		border-radius: 4px;
-		font-family: 'Pontano Sans', sans-serif;
-		font-size: 16px;
-		padding: 2px 8px;
+		width: 80px;
 }
 
 .input-calendar .input-calendar-value:focus {
@@ -58,9 +51,7 @@
 
 .input-calendar .calendar-icon {
 		display: inline-block;
-		padding: 0 5px;
-		height: 27px;
-		line-height: 27px;
+		padding: 0 2px;
 }
 
 .input-calendar .days,
@@ -192,6 +183,14 @@
 	top: 3px;
 
 	background-size: contain;
+}
+
+.increaseFontSize * {
+	font-size: 14px;
+}
+
+.increaseFontSize select {
+	font-size: 120%;
 }
 
 .input-calendar .fa-calendar {

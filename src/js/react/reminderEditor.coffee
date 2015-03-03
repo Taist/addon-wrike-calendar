@@ -53,35 +53,38 @@ ReminderEditor = React.createFactory React.createClass
   render: ->
     reminderData = @props.reminder.getDisplayData()
 
-    div {},
-      Calendar {
-        format: "MM-DD-YYYY"
-        date: @state.startDate
-        onChange: @onChangeDate
-        closeOnSelect: true
-      }
-      div { style: display: 'inline-block' },
-        TimeIntervalSelector
-          startTime: @state.startTime
-          endTime: @state.endTime
-          onChange: @onChangeTimeInterval
-
-      select { value: @state.currentCalendar, onChange: @onChangeCalendar },
-        reminderData.calendars.map (c) ->
-          option { key: c.id, value: c.id }, c.summary
-
-      select { value: @state.reminderMethod, onChange: @onChangeMethod },
-        @reminderMethods.map (m) ->
-          option { key: m, value: m }, m
-
-      div { style: display: 'inline-block' },
-        TimeDuration {
-          minutes: @state.reminderMinutes
-          onChange: @onChangeReminderTime
+    div { className: 'increaseFontSize', style: paddingLeft: 28, marginBottom: 8 },
+      div {},
+        Calendar {
+          format: 'MM/DD/YYYY'
+          date: @state.startDate
+          onChange: @onChangeDate
+          closeOnSelect: true
         }
 
-      button { onClick: @onSave }, 'Save'
-      button { onClick: @onReset }, 'Reset'
+        div { style: display: 'inline-block' },
+          TimeIntervalSelector
+            startTime: @state.startTime
+            endTime: @state.endTime
+            onChange: @onChangeTimeInterval
 
+        select { value: @state.currentCalendar, onChange: @onChangeCalendar },
+          reminderData.calendars.map (c) ->
+            option { key: c.id, value: c.id }, c.summary
+
+        button { onClick: @onSave }, 'Save'
+
+        button { onClick: @onReset }, 'Reset'
+
+      div {}, 'Notifications',
+        select { value: @state.reminderMethod, onChange: @onChangeMethod },
+          @reminderMethods.map (m) ->
+            option { key: m, value: m }, m
+
+        div { style: display: 'inline-block' },
+          TimeDuration {
+            minutes: @state.reminderMinutes
+            onChange: @onChangeReminderTime
+          }
 
 module.exports = ReminderEditor

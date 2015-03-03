@@ -227,8 +227,14 @@ ReminderEditor = React.createFactory(React.createClass({
   render: function() {
     var reminderData;
     reminderData = this.props.reminder.getDisplayData();
-    return div({}, Calendar({
-      format: "MM-DD-YYYY",
+    return div({
+      className: 'increaseFontSize',
+      style: {
+        paddingLeft: 28,
+        marginBottom: 8
+      }
+    }, div({}, Calendar({
+      format: 'MM/DD/YYYY',
       date: this.state.startDate,
       onChange: this.onChangeDate,
       closeOnSelect: true
@@ -248,7 +254,11 @@ ReminderEditor = React.createFactory(React.createClass({
         key: c.id,
         value: c.id
       }, c.summary);
-    })), select({
+    })), button({
+      onClick: this.onSave
+    }, 'Save'), button({
+      onClick: this.onReset
+    }, 'Reset')), div({}, 'Notifications', select({
       value: this.state.reminderMethod,
       onChange: this.onChangeMethod
     }, this.reminderMethods.map(function(m) {
@@ -263,11 +273,7 @@ ReminderEditor = React.createFactory(React.createClass({
     }, TimeDuration({
       minutes: this.state.reminderMinutes,
       onChange: this.onChangeReminderTime
-    })), button({
-      onClick: this.onSave
-    }, 'Save'), button({
-      onClick: this.onReset
-    }, 'Reset'));
+    }))));
   }
 }));
 
@@ -337,14 +343,14 @@ TimeDuration = React.createFactory(React.createClass({
     return this.onChange(event.target.value, this.state.quantity);
   },
   render: function() {
-    console.log(this.props);
     return div({}, input({
       value: this.state.number,
       type: 'text',
       onChange: this.onChangeNumber,
       style: {
         textAlign: 'right',
-        width: 40
+        width: 40,
+        marginRight: 4
       }
     }), select({
       value: this.state.quantity,
