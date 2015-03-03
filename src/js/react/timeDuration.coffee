@@ -17,10 +17,9 @@ TimeDuration = React.createFactory React.createClass
     for quantity in @quantities
       unless props.minutes % quantity.size
         result = {
-          quantity: quantity.name
+          quantity: quantity.size
           number: props.minutes / quantity.size
         }
-    console.log '---', result
     @setState result
 
   componentWillMount: () ->
@@ -29,8 +28,17 @@ TimeDuration = React.createFactory React.createClass
   componentWillReceiveProps: ( nextProps ) ->
     @updateState nextProps
 
-  onChangeQuantity: (event) ->
+  onChange: (number, quantity) ->
+    console.log number, quantity
+    minutes = number * quantity
     @updateState { minutes }
+    @props.onChange?(minutes)
+
+  onChangeQuantity: (event) ->
+    @onChange @state.number, event.target.value
+
+  onChangeNumber: (event) ->
+    @onChange event.target.value, @state.quantity
 
   render: ->
     console.log @props
@@ -39,6 +47,7 @@ TimeDuration = React.createFactory React.createClass
       input {
         value: @state.number
         type: 'text'
+        onChange: @onChangeNumber
         style:
           textAlign: 'right'
           width: 40
@@ -46,6 +55,6 @@ TimeDuration = React.createFactory React.createClass
 
       select { value: @state.quantity, onChange: @onChangeQuantity },
         @quantities.map (q) ->
-          option { key: q.name, value: q.name }, q.name
+          option { key: q.name, value: q.size }, q.name
 
 module.exports = TimeDuration

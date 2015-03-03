@@ -1,6 +1,6 @@
 React = require 'react'
 
-{ div, select, option } = React.DOM
+{ div, select, option, button } = React.DOM
 
 Calendar = require 'react-input-calendar'
 
@@ -10,7 +10,7 @@ TimeDuration = require './timeDuration'
 ReminderEditor = React.createFactory React.createClass
   reminderMethods: [ 'popup', 'email', 'sms' ]
 
-  onChangeDate: ( startDate ) ->
+  onChangeDate: (startDate) ->
     @setState { startDate }
     console.log 'New date is', startDate
 
@@ -22,13 +22,13 @@ ReminderEditor = React.createFactory React.createClass
       startTime: reminderData.startTime
       endTime: reminderData.endTime
       reminderMethod: reminderData.reminderMethod or @reminderMethods[0]
-      reminderMinutes: reminderData.reminderMinutes or 1440
+      reminderMinutes: reminderData.reminderMinutes or 10
       startDate: reminderData.startDate
 
   componentWillMount: () ->
     @updateState @props
 
-  componentWillReceiveProps: ( nextProps ) ->
+  componentWillReceiveProps: (nextProps) ->
     @updateState nextProps
 
   onChangeTimeInterval: (interval) ->
@@ -40,6 +40,15 @@ ReminderEditor = React.createFactory React.createClass
 
   onChangeMethod: (event) ->
     @setState reminderMethod: event.target.value
+
+  onChangeReminderTime: (minutes) ->
+    @setState reminderMinutes: minutes
+
+  onReset: () ->
+    @updateState @props
+
+  onSave: () ->
+    @props.onSave?(@state)
 
   render: ->
     reminderData = @props.reminder.getDisplayData()
@@ -66,7 +75,13 @@ ReminderEditor = React.createFactory React.createClass
           option { key: m, value: m }, m
 
       div { style: display: 'inline-block' },
-        TimeDuration { minutes: @state.reminderMinutes }
+        TimeDuration {
+          minutes: @state.reminderMinutes
+          onChange: @onChangeReminderTime
+        }
+
+      button { onClick: @onSave }, 'Save'
+      button { onClick: @onReset }, 'Reset'
 
 
 module.exports = ReminderEditor

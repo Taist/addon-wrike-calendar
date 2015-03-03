@@ -146,21 +146,25 @@ module.exports = calendarUtils;
 },{"./app":1}],3:[function(require,module,exports){
 module.exports = {
   renderReminder: function(container, reminder) {
-    var React, ReminderEditor;
+    var React, ReminderEditor, onSave;
     React = require('react');
     ReminderEditor = require('./react/reminderEditor');
+    onSave = function(state) {
+      return console.log('onSave', state);
+    };
     return React.render(ReminderEditor({
-      reminder: reminder
+      reminder: reminder,
+      onSave: onSave
     }), container);
   }
 };
 
 },{"./react/reminderEditor":4,"react":183}],4:[function(require,module,exports){
-var Calendar, React, ReminderEditor, TimeDuration, TimeIntervalSelector, div, option, ref, select;
+var Calendar, React, ReminderEditor, TimeDuration, TimeIntervalSelector, button, div, option, ref, select;
 
 React = require('react');
 
-ref = React.DOM, div = ref.div, select = ref.select, option = ref.option;
+ref = React.DOM, div = ref.div, select = ref.select, option = ref.option, button = ref.button;
 
 Calendar = require('react-input-calendar');
 
@@ -184,7 +188,7 @@ ReminderEditor = React.createFactory(React.createClass({
       startTime: reminderData.startTime,
       endTime: reminderData.endTime,
       reminderMethod: reminderData.reminderMethod || this.reminderMethods[0],
-      reminderMinutes: reminderData.reminderMinutes || 1440,
+      reminderMinutes: reminderData.reminderMinutes || 10,
       startDate: reminderData.startDate
     });
   },
@@ -207,6 +211,18 @@ ReminderEditor = React.createFactory(React.createClass({
     return this.setState({
       reminderMethod: event.target.value
     });
+  },
+  onChangeReminderTime: function(minutes) {
+    return this.setState({
+      reminderMinutes: minutes
+    });
+  },
+  onReset: function() {
+    return this.updateState(this.props);
+  },
+  onSave: function() {
+    var base;
+    return typeof (base = this.props).onSave === "function" ? base.onSave(this.state) : void 0;
   },
   render: function() {
     var reminderData;
@@ -245,8 +261,13 @@ ReminderEditor = React.createFactory(React.createClass({
         display: 'inline-block'
       }
     }, TimeDuration({
-      minutes: this.state.reminderMinutes
-    })));
+      minutes: this.state.reminderMinutes,
+      onChange: this.onChangeReminderTime
+    })), button({
+      onClick: this.onSave
+    }, 'Save'), button({
+      onClick: this.onReset
+    }, 'Reset'));
   }
 }));
 
@@ -287,12 +308,11 @@ TimeDuration = React.createFactory(React.createClass({
       quantity = ref1[i];
       if (!(props.minutes % quantity.size)) {
         result = {
-          quantity: quantity.name,
+          quantity: quantity.size,
           number: props.minutes / quantity.size
         };
       }
     }
-    console.log('---', result);
     return this.setState(result);
   },
   componentWillMount: function() {
@@ -301,16 +321,27 @@ TimeDuration = React.createFactory(React.createClass({
   componentWillReceiveProps: function(nextProps) {
     return this.updateState(nextProps);
   },
-  onChangeQuantity: function(event) {
-    return this.updateState({
+  onChange: function(number, quantity) {
+    var base, minutes;
+    console.log(number, quantity);
+    minutes = number * quantity;
+    this.updateState({
       minutes: minutes
     });
+    return typeof (base = this.props).onChange === "function" ? base.onChange(minutes) : void 0;
+  },
+  onChangeQuantity: function(event) {
+    return this.onChange(this.state.number, event.target.value);
+  },
+  onChangeNumber: function(event) {
+    return this.onChange(event.target.value, this.state.quantity);
   },
   render: function() {
     console.log(this.props);
     return div({}, input({
       value: this.state.number,
       type: 'text',
+      onChange: this.onChangeNumber,
       style: {
         textAlign: 'right',
         width: 40
@@ -321,7 +352,7 @@ TimeDuration = React.createFactory(React.createClass({
     }, this.quantities.map(function(q) {
       return option({
         key: q.name,
-        value: q.name
+        value: q.size
       }, q.name);
     })));
   }
