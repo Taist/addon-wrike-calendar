@@ -135,8 +135,8 @@ class Reminder
     eventData = @_reminderData?.event ? {}
 
     eventData.summary = @_task.data["title"]
-    eventData.start = {dateTime: eventStartDate}
-    eventData.end = {dateTime: eventEndDate}
+    eventData.start = {dateTime: eventStartDate} if eventStartDate
+    eventData.end = {dateTime: eventEndDate} if eventEndDate
     eventData.description = "Task link: https://www.wrike.com/open.htm?id=#{@_task.data.id}"
 
     if method
@@ -153,11 +153,7 @@ class Reminder
 
   updateForTask: ->
     if @exists()
-      startDateTime = @_task.data["startDate"]
-      reminderDateTime = @_getBaseDateTime()
-      startDateTime.setHours reminderDateTime.getHours(), reminderDateTime.getMinutes()
-
-      @_setByDateTime startDateTime, @_reminderData.calendarId, null, ->
+      @_updateEvent null, null, @_reminderData.calendarId, null, null, -> 
 
   _save: (newEvent, calendarId, callback) ->
     @_reminderData = {event: newEvent, calendarId}

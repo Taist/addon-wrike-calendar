@@ -685,12 +685,16 @@ Reminder = (function() {
     var eventData, newCallback, ref, ref1;
     eventData = (ref = (ref1 = this._reminderData) != null ? ref1.event : void 0) != null ? ref : {};
     eventData.summary = this._task.data["title"];
-    eventData.start = {
-      dateTime: eventStartDate
-    };
-    eventData.end = {
-      dateTime: eventEndDate
-    };
+    if (eventStartDate) {
+      eventData.start = {
+        dateTime: eventStartDate
+      };
+    }
+    if (eventEndDate) {
+      eventData.end = {
+        dateTime: eventEndDate
+      };
+    }
     eventData.description = "Task link: https://www.wrike.com/open.htm?id=" + this._task.data.id;
     if (method) {
       if (!eventData.reminders) {
@@ -717,12 +721,8 @@ Reminder = (function() {
   };
 
   Reminder.prototype.updateForTask = function() {
-    var reminderDateTime, startDateTime;
     if (this.exists()) {
-      startDateTime = this._task.data["startDate"];
-      reminderDateTime = this._getBaseDateTime();
-      startDateTime.setHours(reminderDateTime.getHours(), reminderDateTime.getMinutes());
-      return this._setByDateTime(startDateTime, this._reminderData.calendarId, null, function() {});
+      return this._updateEvent(null, null, this._reminderData.calendarId, null, null, function() {});
     }
   };
 
