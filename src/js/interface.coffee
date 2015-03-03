@@ -4,6 +4,6 @@ module.exports =
     ReminderEditor = require './react/reminderEditor'
 
     onSave = (state) ->
-      console.log 'onSave', state
+      reminder.upsert state
 
     React.render ( ReminderEditor { reminder, onSave: onSave } ), container

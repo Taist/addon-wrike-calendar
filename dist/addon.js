@@ -150,7 +150,7 @@ module.exports = {
     React = require('react');
     ReminderEditor = require('./react/reminderEditor');
     onSave = function(state) {
-      return console.log('onSave', state);
+      return reminder.upsert(state);
     };
     return React.render(ReminderEditor({
       reminder: reminder,
@@ -596,7 +596,7 @@ Reminder = (function() {
   };
 
   Reminder.prototype.getDisplayData = function() {
-    var addLeadingZero, currentSettings, endDate, endTime, hours, hoursRange, i, len, minutes, minutesRange, notification, ref, ref1, ref2, ref3, ref4, startDate, startTime, usedNotifications;
+    var addLeadingZero, currentSettings, endDate, endTime, hours, hoursRange, i, len, minutes, minutesRange, notification, ref, ref1, ref2, ref3, ref4, ref5, reminderMethod, reminderMinutes, reminders, startDate, startTime, usedNotifications;
     ref = this.exists() ? (addLeadingZero = function(number) {
       if (number < 10) {
         return "0" + number;
@@ -610,13 +610,14 @@ Reminder = (function() {
       calendarId: this._reminderData.calendarId,
       reminders: this._reminderData.event.reminders
     } : this._defaultSettings;
+    reminders = (ref1 = currentSettings != null ? (ref2 = currentSettings.reminders) != null ? ref2.overrides : void 0 : void 0) != null ? ref1 : [];
+    reminderMethod = (ref3 = reminders[0]) != null ? ref3.method : void 0;
+    reminderMinutes = (ref4 = reminders[0]) != null ? ref4.minutes : void 0;
     usedNotifications = {};
-    ref3 = (ref1 = currentSettings != null ? (ref2 = currentSettings.reminders) != null ? ref2.overrides : void 0 : void 0) != null ? ref1 : [];
-    for (i = 0, len = ref3.length; i < len; i++) {
-      notification = ref3[i];
+    for (i = 0, len = reminders.length; i < len; i++) {
+      notification = reminders[i];
       usedNotifications[notification.method] = true;
     }
-    console.log(this._reminderData);
     return {
       hours: hours,
       minutes: minutes,
@@ -624,10 +625,12 @@ Reminder = (function() {
       minutesRange: minutesRange,
       usedNotifications: usedNotifications,
       calendars: Reminder._calendarsList,
-      currentCalendar: (currentSettings != null ? currentSettings.calendarId : void 0) || ((ref4 = Reminder._calendarsList) != null ? ref4[0].id : void 0),
+      currentCalendar: (currentSettings != null ? currentSettings.calendarId : void 0) || ((ref5 = Reminder._calendarsList) != null ? ref5[0].id : void 0),
       startDate: startDate,
       startTime: startTime,
-      endTime: endTime
+      endTime: endTime,
+      reminderMethod: reminderMethod,
+      reminderMinutes: reminderMinutes
     };
   };
 
@@ -640,6 +643,24 @@ Reminder = (function() {
         };
       })(this));
     }
+  };
+
+  Reminder.prototype._updateDateTime = function(date, time) {
+    var timeParts;
+    timeParts = time.match(/\d+/g) || [];
+    date.setHours(timeParts[0] || 0);
+    date.setMinutes(timeParts[1] || 0);
+    return date;
+  };
+
+  Reminder.prototype.upsert = function(data) {
+    var eventEndDate, eventStartDate;
+    console.log('reminder.upsert', data);
+    eventStartDate = this._updateDateTime(new Date(data.startDate), data.startTime);
+    eventEndDate = this._updateDateTime(new Date(data.startDate), data.endTime);
+    return this._updateEvent(eventStartDate, eventEndDate, data.currentCalendar, data.reminderMethod, data.reminderMinutes, function() {
+      return console.log('reminder updated');
+    });
   };
 
   Reminder.prototype.set = function(hours, minutes, calendarId, useSms, useEmail, callback) {
@@ -657,28 +678,31 @@ Reminder = (function() {
   };
 
   Reminder.prototype._setByDateTime = function(eventStartDate, newCalendarId, notifications, callback) {
-    var eventData, i, len, method, newCallback, ref, ref1;
+    return this._updateEvent(eventStartDate, eventStartDate, newCalendarId, null, null, callback);
+  };
+
+  Reminder.prototype._updateEvent = function(eventStartDate, eventEndDate, newCalendarId, method, minutes, callback) {
+    var eventData, newCallback, ref, ref1;
     eventData = (ref = (ref1 = this._reminderData) != null ? ref1.event : void 0) != null ? ref : {};
     eventData.summary = this._task.data["title"];
     eventData.start = {
       dateTime: eventStartDate
     };
     eventData.end = {
-      dateTime: eventStartDate
+      dateTime: eventEndDate
     };
     eventData.description = "Task link: https://www.wrike.com/open.htm?id=" + this._task.data.id;
-    if (notifications != null) {
-      eventData.reminders = {
-        useDefault: false,
-        overrides: []
-      };
-      for (i = 0, len = notifications.length; i < len; i++) {
-        method = notifications[i];
-        eventData.reminders.overrides.push({
-          method: method,
-          minutes: 0
-        });
+    if (method) {
+      if (!eventData.reminders) {
+        eventData.reminders = {
+          useDefault: false,
+          overrides: []
+        };
       }
+      eventData.reminders.overrides[0] = {
+        method: method,
+        minutes: minutes
+      };
     }
     newCallback = (function(_this) {
       return function(newEvent) {

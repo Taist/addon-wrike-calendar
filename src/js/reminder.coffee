@@ -75,11 +75,13 @@ class Reminder
         reminders: @_reminderData.event.reminders
       else @_defaultSettings
 
-    usedNotifications = {}
-    for notification in currentSettings?.reminders?.overrides ? []
-      usedNotifications[notification.method] = yes
+    reminders = currentSettings?.reminders?.overrides ? []
+    reminderMethod = reminders[0]?.method
+    reminderMinutes = reminders[0]?.minutes
 
-    console.log @_reminderData
+    usedNotifications = {}
+    for notification in reminders
+      usedNotifications[notification.method] = yes
 
     return {
       hours,
@@ -92,7 +94,9 @@ class Reminder
 
       startDate,
       startTime,
-      endTime
+      endTime,
+      reminderMethod,
+      reminderMinutes
     }
 
   delete: (callback) ->
@@ -100,6 +104,19 @@ class Reminder
       calendarUtils.deleteEvent @_reminderData.event.id, @_reminderData.calendarId, =>
         @_reminderData = null
         callback()
+
+  _updateDateTime: (date, time) ->
+    timeParts = time.match(/\d+/g) or []
+    date.setHours(timeParts[0] or 0)
+    date.setMinutes(timeParts[1] or 0)
+    return date
+
+  upsert: (data) ->
+    console.log 'reminder.upsert', data
+    eventStartDate = @_updateDateTime new Date(data.startDate), data.startTime
+    eventEndDate = @_updateDateTime new Date(data.startDate), data.endTime
+    @_updateEvent eventStartDate, eventEndDate, data.currentCalendar, data.reminderMethod, data.reminderMinutes, ->
+      console.log 'reminder updated'
 
   set: (hours, minutes, calendarId, useSms, useEmail, callback) ->
     eventStartDate = @_getBaseDateTime()
@@ -112,20 +129,19 @@ class Reminder
     @_setByDateTime eventStartDate, calendarId, notifications, callback
 
   _setByDateTime: (eventStartDate, newCalendarId, notifications, callback) ->
+    @_updateEvent eventStartDate, eventStartDate, newCalendarId, null, null, callback
+
+  _updateEvent: (eventStartDate, eventEndDate, newCalendarId, method, minutes, callback) ->
     eventData = @_reminderData?.event ? {}
 
     eventData.summary = @_task.data["title"]
     eventData.start = {dateTime: eventStartDate}
-    eventData.end = {dateTime: eventStartDate}
+    eventData.end = {dateTime: eventEndDate}
     eventData.description = "Task link: https://www.wrike.com/open.htm?id=#{@_task.data.id}"
 
-    if notifications?
-      eventData.reminders =
-        useDefault: no
-        overrides: []
-
-      for method in notifications
-        eventData.reminders.overrides.push {method, minutes: 0}
+    if method
+      eventData.reminders = { useDefault: no, overrides: [] } unless eventData.reminders
+      eventData.reminders.overrides[0] = { method, minutes }
 
     newCallback = (newEvent) =>
       @_save newEvent, newCalendarId, callback
