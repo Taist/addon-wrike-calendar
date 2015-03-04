@@ -397,7 +397,12 @@ ReminderEditor = React.createFactory(React.createClass({
       startTime: this.state.startTime,
       endTime: this.state.endTime,
       onChange: this.onChangeTimeInterval
-    })), CustomSelect({
+    })), div({
+      style: {
+        marginLeft: 12,
+        display: 'inline-block'
+      }
+    }, CustomSelect({
       selected: {
         id: this.state.currentCalendar.id,
         value: this.state.currentCalendar.summary
@@ -409,10 +414,16 @@ ReminderEditor = React.createFactory(React.createClass({
           value: c.summary
         };
       })
-    }), button({
-      onClick: this.onSave
+    })), button({
+      onClick: this.onSave,
+      style: {
+        marginLeft: 12
+      }
     }, 'Save'), button({
-      onClick: this.onReset
+      onClick: this.onReset,
+      style: {
+        marginLeft: 12
+      }
     }, 'Reset')), div({}, 'Notifications', select({
       value: this.state.reminderMethod,
       onChange: this.onChangeMethod

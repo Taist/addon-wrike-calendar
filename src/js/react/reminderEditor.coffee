@@ -75,15 +75,16 @@ ReminderEditor = React.createFactory React.createClass
             endTime: @state.endTime
             onChange: @onChangeTimeInterval
 
-        CustomSelect {
-          selected: { id: @state.currentCalendar.id, value: @state.currentCalendar.summary }
-          onChange: @onChangeCalendar
-          options: @calendarsList.map (c) -> { id: c.id, value: c.summary }
-        }
+        div { style: marginLeft: 12, display: 'inline-block' },
+          CustomSelect {
+            selected: { id: @state.currentCalendar.id, value: @state.currentCalendar.summary }
+            onChange: @onChangeCalendar
+            options: @calendarsList.map (c) -> { id: c.id, value: c.summary }
+          }
 
-        button { onClick: @onSave }, 'Save'
+        button { onClick: @onSave, style: marginLeft: 12 }, 'Save'
 
-        button { onClick: @onReset }, 'Reset'
+        button { onClick: @onReset, style: marginLeft: 12 }, 'Reset'
 
       div {}, 'Notifications',
         select { value: @state.reminderMethod, onChange: @onChangeMethod },
