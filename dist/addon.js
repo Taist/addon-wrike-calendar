@@ -203,10 +203,12 @@ CustomSelectOption = React.createFactory(React.createClass({
 
 CustomSelect = React.createFactory(React.createClass({
   componentDidMount: function() {
-    return document.body.addEventListener('keyup', this.onKeyUp);
+    document.addEventListener('keyup', this.onKeyUp);
+    return document.addEventListener("click", this.onClose);
   },
   componentWillUnmount: function() {
-    return document.body.removeEventListener('keyup', this.onKeyUp);
+    document.removeEventListener('keyup', this.onKeyUp);
+    return document.removeEventListener("click", this.onClose);
   },
   onKeyUp: function(event) {
     if (event.keyCode === 27) {
@@ -230,6 +232,9 @@ CustomSelect = React.createFactory(React.createClass({
   componentWillReceiveProps: function(nextProps) {
     return this.updateState(nextProps);
   },
+  onClickInside: function(event) {
+    return event.nativeEvent.stopImmediatePropagation();
+  },
   onSelectOption: function(selectedOption) {
     var base;
     this.setState({
@@ -241,16 +246,21 @@ CustomSelect = React.createFactory(React.createClass({
   onClickOnInput: function() {
     return this.setState({
       mode: 'select'
-    });
-  },
-  onClick: function() {
-    return console.log('onClick');
+    }, (function(_this) {
+      return function() {
+        var container, containerRect, optionRect;
+        optionRect = _this.refs.selectedOption.getDOMNode().getBoundingClientRect();
+        container = _this.refs.optionsContainer.getDOMNode();
+        containerRect = container.getBoundingClientRect();
+        return container.scrollTop = Math.max(optionRect.top - optionRect.height * 2 - containerRect.top, 0);
+      };
+    })(this));
   },
   render: function() {
     var controlWidth;
     controlWidth = this.props.width || 160;
     return div({
-      onClick: this.onClick,
+      onClick: this.onClickInside,
       style: {
         display: 'inline-block',
         width: controlWidth
@@ -261,9 +271,9 @@ CustomSelect = React.createFactory(React.createClass({
         width: controlWidth
       },
       onClick: this.onClickOnInput,
-      onClose: this.onClose,
       readOnly: true
     }), this.state.mode === 'select' ? div({
+      ref: 'optionsContainer',
       style: {
         position: 'absolute',
         border: '1px solid silver',
@@ -280,6 +290,7 @@ CustomSelect = React.createFactory(React.createClass({
         return div({
           key: o.id
         }, CustomSelectOption({
+          ref: o.id === _this.state.selected.id ? 'selectedOption' : void 0,
           id: o.id,
           value: o.value,
           onSelect: _this.onSelectOption
@@ -511,11 +522,11 @@ TimeDuration = React.createFactory(React.createClass({
 module.exports = TimeDuration;
 
 },{"react":184}],7:[function(require,module,exports){
-var React, TimeIntervalSelector, TimeSelector, span;
+var React, TimeIntervalSelector, TimeSelector, div;
 
 React = require('react');
 
-span = React.DOM.span;
+div = React.DOM.div;
 
 TimeSelector = require('./timeSelector');
 
@@ -558,17 +569,31 @@ TimeIntervalSelector = React.createFactory(React.createClass({
     }, this.onChange);
   },
   render: function() {
-    return span({}, TimeSelector({
-      width: 60,
+    return div({
+      style: {
+        display: 'inline-block'
+      }
+    }, div({
+      style: {
+        marginLeft: 12,
+        display: 'inline-block'
+      }
+    }, TimeSelector({
+      width: 48,
       currentValue: this.state.startTime,
       onChange: this.onStartChange
-    }), TimeSelector({
-      width: 60,
+    })), div({
+      style: {
+        marginLeft: 8,
+        display: 'inline-block'
+      }
+    }, TimeSelector({
+      width: 48,
       currentValue: this.state.endTime,
       startTime: this.state.startTime,
       duration: true,
       onChange: this.onEndChange
-    }));
+    })));
   }
 }));
 

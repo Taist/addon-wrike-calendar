@@ -1,6 +1,6 @@
 React = require 'react'
 
-{ span } = React.DOM
+{ div } = React.DOM
 
 TimeSelector = require './timeSelector'
 
@@ -32,18 +32,18 @@ TimeIntervalSelector = React.createFactory React.createClass
     @setState { endTime }, @onChange
 
   render: () ->
-    span {},
-
-      TimeSelector
-        width: 60
-        currentValue: @state.startTime
-        onChange: @onStartChange
-
-      TimeSelector
-        width: 60
-        currentValue: @state.endTime
-        startTime: @state.startTime
-        duration: true
-        onChange: @onEndChange
+    div { style: display: 'inline-block' },
+      div { style: marginLeft: 12, display: 'inline-block' },
+        TimeSelector
+          width: 48
+          currentValue: @state.startTime
+          onChange: @onStartChange
+      div { style: marginLeft: 8, display: 'inline-block' },
+        TimeSelector
+          width: 48
+          currentValue: @state.endTime
+          startTime: @state.startTime
+          duration: true
+          onChange: @onEndChange
 
 module.exports = TimeIntervalSelector

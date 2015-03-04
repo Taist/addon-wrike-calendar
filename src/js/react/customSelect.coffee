@@ -29,16 +29,18 @@ CustomSelectOption = React.createFactory React.createClass
 
 CustomSelect = React.createFactory React.createClass
   componentDidMount: ->
-    document.body.addEventListener 'keyup', @onKeyUp
+    document.addEventListener 'keyup', @onKeyUp
+    document.addEventListener "click", @onClose
 
   componentWillUnmount: ->
-    document.body.removeEventListener 'keyup', @onKeyUp
+    document.removeEventListener 'keyup', @onKeyUp
+    document.removeEventListener "click", @onClose
 
   onKeyUp: (event) ->
     if event.keyCode is 27
       @onClose()
 
-  onClose: () ->
+  onClose: ->
     @setState { mode: 'view' }
 
   updateState: (newProps) ->
@@ -46,37 +48,74 @@ CustomSelect = React.createFactory React.createClass
       selected: newProps.selected
       mode: 'view'
 
-  componentWillMount: () ->
+  componentWillMount: ->
     @updateState @props
 
   componentWillReceiveProps: (nextProps) ->
     @updateState nextProps
 
+ # componentDidMount: function() {
+ #    document.addEventListener("click", this.documentClickHandler);
+ #  },
+ #
+ #  componentWillUnmount: function() {
+ #    document.removeEventListener("click", this.documentClickHandler);
+ #  },
+ #
+ #  documentClickHandler: function() {
+ #    this.setState({
+ #      isOpen: false
+ #    });
+ #  },
+ #
+ #  triggerClickHandler: function() {
+ #    this.setState({
+ #      isOpen: true
+ #    });
+ #  },
+ #
+ #  dropdownClickHandler: function(e) {
+ #    e.nativeEvent.stopImmediatePropagation();
+ #  },
+
+  onClickInside: (event) ->
+    event.nativeEvent.stopImmediatePropagation()
+
   onSelectOption: (selectedOption) ->
     @setState { value: selectedOption.value, mode: 'view' }
     @props.onChange?(selectedOption)
 
-  onClickOnInput: () ->
-    @setState { mode: 'select' }
+  onClickOnInput: ->
+    @setState { mode: 'select' }, =>
+      optionRect = @refs.selectedOption.getDOMNode().getBoundingClientRect()
 
-  onClick: () ->
-    console.log 'onClick'
+      container = @refs.optionsContainer.getDOMNode()
+      containerRect = container.getBoundingClientRect()
+
+      container.scrollTop = Math.max(
+        optionRect.top - optionRect.height * 2 - containerRect.top , 0
+      )
 
   render: ->
     controlWidth = @props.width or 160
 
-    div { onClick: @onClick, style: display: 'inline-block', width: controlWidth },
+    div {
+      onClick: @onClickInside
+      style:
+        display: 'inline-block'
+        width: controlWidth
+    },
       div {}
         input {
           value: @state.selected.value
           style:
             width: controlWidth
           onClick: @onClickOnInput
-          onClose: @onClose
           readOnly: true
         }
       if @state.mode is 'select'
         div {
+          ref: 'optionsContainer'
           style:
             position: 'absolute'
             border: '1px solid silver'
@@ -89,6 +128,11 @@ CustomSelect = React.createFactory React.createClass
             overflowX: 'hidden'
         },
           @props.options.map (o) =>
-            div { key: o.id }, CustomSelectOption { id: o.id, value: o.value, onSelect: @onSelectOption }
+            div { key: o.id }, CustomSelectOption {
+              ref: if o.id is @state.selected.id then 'selectedOption' else undefined
+              id: o.id
+              value: o.value
+              onSelect: @onSelectOption
+            }
 
 module.exports = CustomSelect
