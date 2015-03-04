@@ -6,6 +6,7 @@ Calendar = require 'react-input-calendar'
 
 TimeIntervalSelector = require './timeIntervalSelector'
 TimeDuration = require './timeDuration'
+CustomSelect = require './customSelect'
 
 ReminderEditor = React.createFactory React.createClass
   reminderMethods: [ 'popup', 'email', 'sms' ]
@@ -14,11 +15,18 @@ ReminderEditor = React.createFactory React.createClass
     @setState { startDate }
     console.log 'New date is', startDate
 
+  calendarsList: []
+
+  getCalendarById: (calendarId) ->
+    @calendarsList.filter( (c) -> c.id is calendarId )[0]
+
   updateState: (newProps) ->
     reminderData = newProps.reminder.getDisplayData()
 
+    @calendarsList = reminderData.calendars
+
     @setState
-      currentCalendar: reminderData.currentCalendar
+      currentCalendar: @getCalendarById reminderData.currentCalendar
       startTime: reminderData.startTime
       endTime: reminderData.endTime
       reminderMethod: reminderData.reminderMethod or @reminderMethods[0]
@@ -37,8 +45,8 @@ ReminderEditor = React.createFactory React.createClass
     console.log 'onChangeTimeInterval', interval
     @setState interval
 
-  onChangeCalendar: (event) ->
-    @setState currentCalendar: event.target.value
+  onChangeCalendar: (calendarId) ->
+    @setState currentCalendar: @getCalendarById calendarId
 
   onChangeMethod: (event) ->
     @setState reminderMethod: event.target.value
@@ -70,9 +78,11 @@ ReminderEditor = React.createFactory React.createClass
             endTime: @state.endTime
             onChange: @onChangeTimeInterval
 
-        select { value: @state.currentCalendar, onChange: @onChangeCalendar },
-          reminderData.calendars.map (c) ->
-            option { key: c.id, value: c.id }, c.summary
+        CustomSelect {
+          selected: { id: @state.currentCalendar.id, value: @state.currentCalendar.summary }
+          onChange: @onChangeCalendar
+          options: @calendarsList.map (c) -> { id: c.id, value: c.summary }
+        }
 
         button { onClick: @onSave }, 'Save'
 

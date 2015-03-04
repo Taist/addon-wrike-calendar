@@ -112,7 +112,7 @@ class Reminder
     console.log 'reminder.upsert', data
     eventStartDate = @_updateDateTime new Date(data.startDate), data.startTime
     eventEndDate = @_updateDateTime new Date(data.startDate), data.endTime
-    @_updateEvent eventStartDate, eventEndDate, data.currentCalendar, data.reminderMethod, data.reminderMinutes, ->
+    @_updateEvent eventStartDate, eventEndDate, data.currentCalendar.id, data.reminderMethod, data.reminderMinutes, ->
       console.log 'reminder updated'
 
   set: (hours, minutes, calendarId, useSms, useEmail, callback) ->
@@ -137,7 +137,7 @@ class Reminder
     eventData.description = "Task link: https://www.wrike.com/open.htm?id=#{@_task.data.id}"
 
     if method
-      eventData.reminders = { useDefault: no, overrides: [] } unless eventData.reminders
+      eventData.reminders = { useDefault: no, overrides: [] } unless eventData.reminders?.overrides
       eventData.reminders.overrides[0] = { method, minutes }
 
     newCallback = (newEvent) =>
