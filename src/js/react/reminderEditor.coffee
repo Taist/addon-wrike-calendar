@@ -34,19 +34,16 @@ ReminderEditor = React.createFactory React.createClass
       startDate: reminderData.startDate
 
   componentWillMount: () ->
-    console.log 'componentWillMount'
     @updateState @props
 
   componentWillReceiveProps: (nextProps) ->
-    console.log 'componentWillReceiveProps'
     @updateState nextProps
 
   onChangeTimeInterval: (interval) ->
-    console.log 'onChangeTimeInterval', interval
     @setState interval
 
-  onChangeCalendar: (calendarId) ->
-    @setState currentCalendar: @getCalendarById calendarId
+  onChangeCalendar: (calendar) ->
+    @setState currentCalendar: @getCalendarById calendar.id
 
   onChangeMethod: (event) ->
     @setState reminderMethod: event.target.value

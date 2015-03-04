@@ -174,7 +174,8 @@ CustomSelectOption = React.createFactory(React.createClass({
   },
   onClick: function() {
     var base;
-    return typeof (base = this.props).onSelect === "function" ? base.onSelect(this.props.id) : void 0;
+    console.log('onClickOption');
+    return typeof (base = this.props).onSelect === "function" ? base.onSelect(this.props) : void 0;
   },
   onMouseEnter: function() {
     return this.setState({
@@ -192,8 +193,9 @@ CustomSelectOption = React.createFactory(React.createClass({
       onMouseEnter: this.onMouseEnter,
       onMouseLeave: this.onMouseLeave,
       style: {
-        padding: 2,
-        backgroundColor: this.state.backgroundColor
+        padding: "2px 16px 2px 4px",
+        backgroundColor: this.state.backgroundColor,
+        whiteSpace: 'nowrap'
       }
     }, this.props.value);
   }
@@ -201,15 +203,10 @@ CustomSelectOption = React.createFactory(React.createClass({
 
 CustomSelect = React.createFactory(React.createClass({
   componentDidMount: function() {
-    document.body.addEventListener('click', this.onClose);
     return document.body.addEventListener('keyup', this.onKeyUp);
   },
   componentWillUnmount: function() {
-    document.body.removeEventListener('click', this.onClose);
     return document.body.removeEventListener('keyup', this.onKeyUp);
-  },
-  handleClick: function(event) {
-    return event.preventPropagation();
   },
   onKeyUp: function(event) {
     if (event.keyCode === 27) {
@@ -217,7 +214,6 @@ CustomSelect = React.createFactory(React.createClass({
     }
   },
   onClose: function() {
-    console.log('onClose');
     return this.setState({
       mode: 'view'
     });
@@ -234,27 +230,27 @@ CustomSelect = React.createFactory(React.createClass({
   componentWillReceiveProps: function(nextProps) {
     return this.updateState(nextProps);
   },
-  onSelectOption: function(selectedOptionId) {
-    var base, option;
-    option = this.props.options.filter(function(o) {
-      return o.id === selectedOptionId;
-    })[0];
+  onSelectOption: function(selectedOption) {
+    var base;
     this.setState({
-      value: option.value,
+      value: selectedOption.value,
       mode: 'view'
     });
-    return typeof (base = this.props).onChange === "function" ? base.onChange(option.id) : void 0;
+    return typeof (base = this.props).onChange === "function" ? base.onChange(selectedOption) : void 0;
   },
   onClickOnInput: function() {
     return this.setState({
       mode: 'select'
     });
   },
+  onClick: function() {
+    return console.log('onClick');
+  },
   render: function() {
     var controlWidth;
-    console.log(this.props);
     controlWidth = this.props.width || 160;
     return div({
+      onClick: this.onClick,
       style: {
         display: 'inline-block',
         width: controlWidth
@@ -265,13 +261,19 @@ CustomSelect = React.createFactory(React.createClass({
         width: controlWidth
       },
       onClick: this.onClickOnInput,
+      onClose: this.onClose,
       readOnly: true
     }), this.state.mode === 'select' ? div({
       style: {
         position: 'absolute',
         border: '1px solid silver',
-        width: controlWidth,
-        cursor: 'pointer'
+        minWidth: controlWidth,
+        cursor: 'pointer',
+        backgroundColor: 'white',
+        zIndex: 1024,
+        maxHeight: 128,
+        overflowY: 'auto',
+        overflowX: 'hidden'
       }
     }, this.props.options.map((function(_this) {
       return function(o) {
@@ -332,20 +334,17 @@ ReminderEditor = React.createFactory(React.createClass({
     });
   },
   componentWillMount: function() {
-    console.log('componentWillMount');
     return this.updateState(this.props);
   },
   componentWillReceiveProps: function(nextProps) {
-    console.log('componentWillReceiveProps');
     return this.updateState(nextProps);
   },
   onChangeTimeInterval: function(interval) {
-    console.log('onChangeTimeInterval', interval);
     return this.setState(interval);
   },
-  onChangeCalendar: function(calendarId) {
+  onChangeCalendar: function(calendar) {
     return this.setState({
-      currentCalendar: this.getCalendarById(calendarId)
+      currentCalendar: this.getCalendarById(calendar.id)
     });
   },
   onChangeMethod: function(event) {
@@ -544,7 +543,7 @@ TimeIntervalSelector = React.createFactory(React.createClass({
   onStartChange: function(startTime) {
     var endTime;
     endTime = this.state.endTime;
-    if (startTime.length >= endTime.length && startTime > endTime) {
+    if (startTime > endTime) {
       this.setState({
         endTime: startTime
       });
@@ -560,9 +559,11 @@ TimeIntervalSelector = React.createFactory(React.createClass({
   },
   render: function() {
     return span({}, TimeSelector({
+      width: 60,
       currentValue: this.state.startTime,
       onChange: this.onStartChange
     }), TimeSelector({
+      width: 60,
       currentValue: this.state.endTime,
       startTime: this.state.startTime,
       duration: true,
@@ -574,11 +575,13 @@ TimeIntervalSelector = React.createFactory(React.createClass({
 module.exports = TimeIntervalSelector;
 
 },{"./timeSelector":8,"react":184}],8:[function(require,module,exports){
-var React, TimeSelector, div, option, ref, select, span;
+var CustomSelect, React, TimeSelector, div, option, ref, select, span;
 
 React = require('react');
 
 ref = React.DOM, div = ref.div, span = ref.span, select = ref.select, option = ref.option;
+
+CustomSelect = require('./customSelect');
 
 TimeSelector = React.createFactory(React.createClass({
   minimalInterval: 30,
@@ -589,10 +592,15 @@ TimeSelector = React.createFactory(React.createClass({
     };
   },
   updateState: function(props) {
+    var currentValue;
+    currentValue = props.currentValue || props.startTime;
     return this.setState({
       startTime: props.startTime,
       endTime: props.endTime,
-      currentValue: this.timeStringToMinutes(props.currentValue || props.startTime)
+      currentValue: {
+        id: currentValue,
+        value: this.minutesToTimeString(currentValue)
+      }
     });
   },
   componentWillMount: function() {
@@ -628,37 +636,39 @@ TimeSelector = React.createFactory(React.createClass({
     duration = minutes < 60 ? minutes + " mins" : minutes === 60 ? "1 hr" : (parseFloat((minutes / 60).toFixed(1))) + " hrs";
     return " (" + duration + ")";
   },
-  onChange: function(event) {
-    var base, currentValue;
-    currentValue = this.minutesToTimeString(event.target.value);
+  onChange: function(currentValue) {
+    var base;
     this.setState({
       currentValue: currentValue
     });
-    return typeof (base = this.props).onChange === "function" ? base.onChange(currentValue) : void 0;
+    return typeof (base = this.props).onChange === "function" ? base.onChange(currentValue.id) : void 0;
   },
   generateOptions: function() {
     var i, min, ref1, ref2, ref3, results, startMinutes, stopMinutes;
-    startMinutes = this.timeStringToMinutes(this.state.startTime || 0);
-    stopMinutes = this.timeStringToMinutes(this.state.endTime || "23:59");
+    startMinutes = this.state.startTime || 0;
+    stopMinutes = this.state.endTime || (1440 - 1);
     results = [];
     for (min = i = ref1 = startMinutes, ref2 = stopMinutes, ref3 = this.minimalInterval; ref3 > 0 ? i <= ref2 : i >= ref2; min = i += ref3) {
-      results.push(option({
-        value: min
-      }, "" + (this.minutesToTimeString(min)) + (this.props.duration ? this.minutesToDuration(min - startMinutes) : '')));
+      results.push({
+        id: min,
+        value: "" + (this.minutesToTimeString(min)) + (this.props.duration ? this.minutesToDuration(min - startMinutes) : '')
+      });
     }
     return results;
   },
   render: function() {
-    return select({
-      value: this.state.currentValue,
-      onChange: this.onChange
-    }, this.generateOptions());
+    return CustomSelect({
+      width: this.props.width,
+      selected: this.state.currentValue,
+      onChange: this.onChange,
+      options: this.generateOptions()
+    });
   }
 }));
 
 module.exports = TimeSelector;
 
-},{"react":184}],9:[function(require,module,exports){
+},{"./customSelect":4,"react":184}],9:[function(require,module,exports){
 var Reminder, app, calendarUtils;
 
 app = require('./app');
@@ -747,22 +757,15 @@ Reminder = (function() {
   };
 
   Reminder.prototype.getDisplayData = function() {
-    var addLeadingZero, currentSettings, displayData, endDate, endTime, i, len, notification, ref, ref1, ref2, ref3, ref4, reminderMethod, reminderMinutes, reminders, startDate, startTime, usedNotifications;
+    var currentSettings, displayData, endDate, endTime, i, len, notification, ref, ref1, ref2, ref3, ref4, reminderMethod, reminderMinutes, reminders, startDate, startTime, usedNotifications;
     if (this.exists()) {
-      addLeadingZero = function(number) {
-        if (number < 10) {
-          return "0" + number;
-        } else {
-          return number;
-        }
-      };
       startDate = new Date(this._reminderData.event.start.dateTime);
-      startTime = (startDate.getHours()) + ":" + (addLeadingZero(startDate.getMinutes()));
+      startTime = startDate.getHours() * 60 + startDate.getMinutes();
       endDate = new Date(this._reminderData.event.end.dateTime);
-      endTime = (endDate.getHours()) + ":" + (addLeadingZero(endDate.getMinutes()));
+      endTime = endDate.getHours() * 60 + endDate.getMinutes();
     } else {
       startDate = new Date;
-      startTime = endTime = '8:00';
+      startTime = endTime = 8 * 60;
     }
     currentSettings = this._reminderData != null ? {
       calendarId: this._reminderData.calendarId,
@@ -803,10 +806,8 @@ Reminder = (function() {
   };
 
   Reminder.prototype._updateDateTime = function(date, time) {
-    var timeParts;
-    timeParts = time.match(/\d+/g) || [];
-    date.setHours(timeParts[0] || 0);
-    date.setMinutes(timeParts[1] || 0);
+    date.setHours(Math.floor(time / 60));
+    date.setMinutes(time % 60);
     return date;
   };
 

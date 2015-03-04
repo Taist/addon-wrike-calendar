@@ -2,6 +2,8 @@ React = require 'react'
 
 { div, span, select, option } = React.DOM
 
+CustomSelect = require './customSelect'
+
 TimeSelector = React.createFactory React.createClass
   minimalInterval: 30
 
@@ -10,10 +12,12 @@ TimeSelector = React.createFactory React.createClass
     endTime: "23:59"
 
   updateState: (props) ->
+    currentValue = props.currentValue or props.startTime
+
     @setState
       startTime: props.startTime
       endTime: props.endTime
-      currentValue: @timeStringToMinutes( props.currentValue or props.startTime )
+      currentValue: { id: currentValue, value: @minutesToTimeString currentValue }
 
   componentWillMount: () ->
     @updateState @props
@@ -45,20 +49,23 @@ TimeSelector = React.createFactory React.createClass
 
     " (#{duration})"
 
-  onChange: (event) ->
-    currentValue = @minutesToTimeString event.target.value
+  onChange: (currentValue) ->
     @setState { currentValue }
-    @props.onChange?( currentValue )
+    @props.onChange?( currentValue.id )
 
   generateOptions: ->
-    startMinutes = @timeStringToMinutes( @state.startTime or 0 )
-    stopMinutes = @timeStringToMinutes( @state.endTime or "23:59" )
+    startMinutes = @state.startTime or 0
+    stopMinutes = @state.endTime or (1440 - 1)
 
     for min in [startMinutes..stopMinutes] by @minimalInterval
-      option { value: min },
-        "#{@minutesToTimeString min}#{if @props.duration then @minutesToDuration(min - startMinutes) else ''}"
+      { id: min, value: "#{@minutesToTimeString min}#{if @props.duration then @minutesToDuration(min - startMinutes) else ''}" }
 
   render: ->
-    select { value: @state.currentValue, onChange: @onChange }, @generateOptions()
+    CustomSelect {
+      width: @props.width
+      selected: @state.currentValue
+      onChange: @onChange
+      options: @generateOptions()
+    }
 
 module.exports = TimeSelector

@@ -54,18 +54,15 @@ class Reminder
   getDisplayData: ->
 
     if @exists()
-      addLeadingZero = (number) -> if number < 10 then "0" + number else number
-
       startDate = new Date @_reminderData.event.start.dateTime
-      startTime = "#{startDate.getHours()}:#{addLeadingZero startDate.getMinutes()}"
+      startTime = startDate.getHours() * 60 + startDate.getMinutes()
 
       endDate = new Date @_reminderData.event.end.dateTime
-      endTime = "#{endDate.getHours()}:#{addLeadingZero endDate.getMinutes()}"
+      endTime = endDate.getHours() * 60 + endDate.getMinutes()
 
     else
       startDate = new Date
-      startTime = endTime = '8:00'
-
+      startTime = endTime = 8 * 60
 
     currentSettings =
       if @_reminderData?
@@ -103,9 +100,8 @@ class Reminder
         callback()
 
   _updateDateTime: (date, time) ->
-    timeParts = time.match(/\d+/g) or []
-    date.setHours(timeParts[0] or 0)
-    date.setMinutes(timeParts[1] or 0)
+    date.setHours Math.floor time / 60
+    date.setMinutes time % 60
     return date
 
   upsert: (data) ->

@@ -7,7 +7,8 @@ CustomSelectOption = React.createFactory React.createClass
     backgroundColor: ''
 
   onClick: ->
-    @props.onSelect?(@props.id)
+    console.log 'onClickOption'
+    @props.onSelect?(@props)
 
   onMouseEnter: ->
     @setState backgroundColor: '#ddd'
@@ -21,28 +22,23 @@ CustomSelectOption = React.createFactory React.createClass
       onMouseEnter: @onMouseEnter
       onMouseLeave: @onMouseLeave
       style:
-        padding: 2
+        padding: "2px 16px 2px 4px"
         backgroundColor: @state.backgroundColor
+        whiteSpace: 'nowrap'
     }, @props.value
 
 CustomSelect = React.createFactory React.createClass
   componentDidMount: ->
-    document.body.addEventListener 'click', @onClose
     document.body.addEventListener 'keyup', @onKeyUp
 
   componentWillUnmount: ->
-    document.body.removeEventListener 'click', @onClose
     document.body.removeEventListener 'keyup', @onKeyUp
-
-  handleClick: (event) ->
-    event.preventPropagation()
 
   onKeyUp: (event) ->
     if event.keyCode is 27
       @onClose()
 
   onClose: () ->
-    console.log 'onClose'
     @setState { mode: 'view' }
 
   updateState: (newProps) ->
@@ -56,34 +52,41 @@ CustomSelect = React.createFactory React.createClass
   componentWillReceiveProps: (nextProps) ->
     @updateState nextProps
 
-  onSelectOption: (selectedOptionId) ->
-    option = @props.options.filter( (o) -> o.id is selectedOptionId )[0]
-    @setState { value: option.value, mode: 'view' }
-    @props.onChange?(option.id)
+  onSelectOption: (selectedOption) ->
+    @setState { value: selectedOption.value, mode: 'view' }
+    @props.onChange?(selectedOption)
 
   onClickOnInput: () ->
     @setState { mode: 'select' }
 
+  onClick: () ->
+    console.log 'onClick'
+
   render: ->
-    console.log @props
     controlWidth = @props.width or 160
 
-    div { style: display: 'inline-block', width: controlWidth },
+    div { onClick: @onClick, style: display: 'inline-block', width: controlWidth },
       div {}
         input {
           value: @state.selected.value
           style:
             width: controlWidth
           onClick: @onClickOnInput
+          onClose: @onClose
           readOnly: true
         }
       if @state.mode is 'select'
         div {
           style:
-            position: 'absolute',
-            border: '1px solid silver',
-            width: controlWidth
+            position: 'absolute'
+            border: '1px solid silver'
+            minWidth: controlWidth
             cursor: 'pointer'
+            backgroundColor: 'white'
+            zIndex: 1024
+            maxHeight: 128
+            overflowY: 'auto'
+            overflowX: 'hidden'
         },
           @props.options.map (o) =>
             div { key: o.id }, CustomSelectOption { id: o.id, value: o.value, onSelect: @onSelectOption }

@@ -24,7 +24,7 @@ TimeIntervalSelector = React.createFactory React.createClass
 
   onStartChange: (startTime) ->
     endTime = @state.endTime
-    if startTime.length >= endTime.length and startTime > endTime
+    if startTime > endTime
       @setState { endTime: startTime }
     @setState { startTime }, @onChange
 
@@ -35,10 +35,12 @@ TimeIntervalSelector = React.createFactory React.createClass
     span {},
 
       TimeSelector
+        width: 60
         currentValue: @state.startTime
         onChange: @onStartChange
 
       TimeSelector
+        width: 60
         currentValue: @state.endTime
         startTime: @state.startTime
         duration: true
