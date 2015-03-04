@@ -26,6 +26,7 @@ class Reminder
 
     app.api.userData.get "defaultSettings", (error, defaultSettingsData) =>
       @_defaultSettings = defaultSettingsData
+
       app.api.userData.get @_task.data.id, (error, existingReminderData) =>
 
         console.log 'existingReminderData', existingReminderData
@@ -51,7 +52,7 @@ class Reminder
   _getRawBaseValue: -> @_task.data["startDate"] ? @_task.data["finishDate"]
 
   getDisplayData: ->
-    [hours, minutes] =
+
     if @exists()
       addLeadingZero = (number) -> if number < 10 then "0" + number else number
 
@@ -61,19 +62,17 @@ class Reminder
       endDate = new Date @_reminderData.event.end.dateTime
       endTime = "#{endDate.getHours()}:#{addLeadingZero endDate.getMinutes()}"
 
-      [(addLeadingZero startDate.getHours()), (addLeadingZero startDate.getMinutes())]
     else
-      ['08', '00']
+      startDate = new Date
+      startTime = endTime = '8:00'
 
-    hoursRange = ['06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21',
-                  '22', '23']
-    minutesRange = ['00', '15', '30', '45']
 
     currentSettings =
       if @_reminderData?
         calendarId: @_reminderData.calendarId
         reminders: @_reminderData.event.reminders
-      else @_defaultSettings
+      else
+        calendarId: @_defaultSettings.calendarId
 
     reminders = currentSettings?.reminders?.overrides ? []
     reminderMethod = reminders[0]?.method
@@ -83,12 +82,7 @@ class Reminder
     for notification in reminders
       usedNotifications[notification.method] = yes
 
-    return {
-      hours,
-      minutes,
-      hoursRange,
-      minutesRange,
-      usedNotifications,
+    displayData = {
       calendars: Reminder._calendarsList,
       currentCalendar: currentSettings?.calendarId or Reminder._calendarsList?[0].id,
 
@@ -98,6 +92,9 @@ class Reminder
       reminderMethod,
       reminderMinutes
     }
+
+    console.log displayData
+    return displayData
 
   delete: (callback) ->
     if @exists()
@@ -153,7 +150,7 @@ class Reminder
 
   updateForTask: ->
     if @exists()
-      @_updateEvent null, null, @_reminderData.calendarId, null, null, -> 
+      @_updateEvent null, null, @_reminderData.calendarId, null, null, ->
 
   _save: (newEvent, calendarId, callback) ->
     @_reminderData = {event: newEvent, calendarId}

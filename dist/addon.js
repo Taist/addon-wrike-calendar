@@ -180,9 +180,9 @@ ReminderEditor = React.createFactory(React.createClass({
     });
     return console.log('New date is', startDate);
   },
-  updateState: function(props) {
+  updateState: function(newProps) {
     var reminderData;
-    reminderData = this.props.reminder.getDisplayData();
+    reminderData = newProps.reminder.getDisplayData();
     return this.setState({
       currentCalendar: reminderData.currentCalendar,
       startTime: reminderData.startTime,
@@ -193,9 +193,11 @@ ReminderEditor = React.createFactory(React.createClass({
     });
   },
   componentWillMount: function() {
+    console.log('componentWillMount');
     return this.updateState(this.props);
   },
   componentWillReceiveProps: function(nextProps) {
+    console.log('componentWillReceiveProps');
     return this.updateState(nextProps);
   },
   onChangeTimeInterval: function(interval) {
@@ -602,42 +604,48 @@ Reminder = (function() {
   };
 
   Reminder.prototype.getDisplayData = function() {
-    var addLeadingZero, currentSettings, endDate, endTime, hours, hoursRange, i, len, minutes, minutesRange, notification, ref, ref1, ref2, ref3, ref4, ref5, reminderMethod, reminderMinutes, reminders, startDate, startTime, usedNotifications;
-    ref = this.exists() ? (addLeadingZero = function(number) {
-      if (number < 10) {
-        return "0" + number;
-      } else {
-        return number;
-      }
-    }, startDate = new Date(this._reminderData.event.start.dateTime), startTime = (startDate.getHours()) + ":" + (addLeadingZero(startDate.getMinutes())), endDate = new Date(this._reminderData.event.end.dateTime), endTime = (endDate.getHours()) + ":" + (addLeadingZero(endDate.getMinutes())), [addLeadingZero(startDate.getHours()), addLeadingZero(startDate.getMinutes())]) : ['08', '00'], hours = ref[0], minutes = ref[1];
-    hoursRange = ['06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'];
-    minutesRange = ['00', '15', '30', '45'];
+    var addLeadingZero, currentSettings, displayData, endDate, endTime, i, len, notification, ref, ref1, ref2, ref3, ref4, reminderMethod, reminderMinutes, reminders, startDate, startTime, usedNotifications;
+    if (this.exists()) {
+      addLeadingZero = function(number) {
+        if (number < 10) {
+          return "0" + number;
+        } else {
+          return number;
+        }
+      };
+      startDate = new Date(this._reminderData.event.start.dateTime);
+      startTime = (startDate.getHours()) + ":" + (addLeadingZero(startDate.getMinutes()));
+      endDate = new Date(this._reminderData.event.end.dateTime);
+      endTime = (endDate.getHours()) + ":" + (addLeadingZero(endDate.getMinutes()));
+    } else {
+      startDate = new Date;
+      startTime = endTime = '8:00';
+    }
     currentSettings = this._reminderData != null ? {
       calendarId: this._reminderData.calendarId,
       reminders: this._reminderData.event.reminders
-    } : this._defaultSettings;
-    reminders = (ref1 = currentSettings != null ? (ref2 = currentSettings.reminders) != null ? ref2.overrides : void 0 : void 0) != null ? ref1 : [];
-    reminderMethod = (ref3 = reminders[0]) != null ? ref3.method : void 0;
-    reminderMinutes = (ref4 = reminders[0]) != null ? ref4.minutes : void 0;
+    } : {
+      calendarId: this._defaultSettings.calendarId
+    };
+    reminders = (ref = currentSettings != null ? (ref1 = currentSettings.reminders) != null ? ref1.overrides : void 0 : void 0) != null ? ref : [];
+    reminderMethod = (ref2 = reminders[0]) != null ? ref2.method : void 0;
+    reminderMinutes = (ref3 = reminders[0]) != null ? ref3.minutes : void 0;
     usedNotifications = {};
     for (i = 0, len = reminders.length; i < len; i++) {
       notification = reminders[i];
       usedNotifications[notification.method] = true;
     }
-    return {
-      hours: hours,
-      minutes: minutes,
-      hoursRange: hoursRange,
-      minutesRange: minutesRange,
-      usedNotifications: usedNotifications,
+    displayData = {
       calendars: Reminder._calendarsList,
-      currentCalendar: (currentSettings != null ? currentSettings.calendarId : void 0) || ((ref5 = Reminder._calendarsList) != null ? ref5[0].id : void 0),
+      currentCalendar: (currentSettings != null ? currentSettings.calendarId : void 0) || ((ref4 = Reminder._calendarsList) != null ? ref4[0].id : void 0),
       startDate: startDate,
       startTime: startTime,
       endTime: endTime,
       reminderMethod: reminderMethod,
       reminderMinutes: reminderMinutes
     };
+    console.log(displayData);
+    return displayData;
   };
 
   Reminder.prototype["delete"] = function(callback) {
@@ -24849,7 +24857,7 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":52}],"addon":[function(require,module,exports){
-var Reminder, calendarUtils, container, createCalendarSelect, createNotificationCheck, createTimeSelect, draw, drawAuthorization, drawReminderEditControl, drawReminderView, drawRemindersContainer, icons, reactContainer, reminder, start, taistApi, updateReminderForTask, wrikeUtils;
+var Reminder, calendarUtils, container, createCalendarSelect, createNotificationCheck, createTimeSelect, draw, drawAuthorization, drawReminderView, drawRemindersContainer, icons, reactContainer, reminder, start, taistApi, updateReminderForTask, wrikeUtils;
 
 taistApi = null;
 
@@ -24934,37 +24942,6 @@ drawRemindersContainer = function() {
   return taskDurationSpan.after(container);
 };
 
-drawReminderEditControl = function() {
-  var calendarSelect, cancelLink, displayData, emailCheck, hoursSelect, minutesSelect, reminderEditControl, setLink, smsCheck;
-  container.html('');
-  reminderEditControl = $('<span></span>');
-  displayData = reminder.getDisplayData();
-  smsCheck = createNotificationCheck("Sms", "sms", displayData);
-  emailCheck = createNotificationCheck("E-mail", "email", displayData);
-  hoursSelect = createTimeSelect(displayData.hoursRange, displayData.hours);
-  minutesSelect = createTimeSelect(displayData.minutesRange, displayData.minutes);
-  setLink = $('<a></a>', {
-    text: "Set",
-    click: function() {
-      var useEmail, useSms;
-      useSms = smsCheck.check.is(':checked');
-      useEmail = emailCheck.check.is(':checked');
-      return reminder.set(hoursSelect.val(), minutesSelect.val(), calendarSelect.val(), useSms, useEmail, function() {
-        return drawReminderView();
-      });
-    }
-  });
-  cancelLink = $("<a></a>", {
-    text: 'Cancel',
-    click: function() {
-      return drawReminderView();
-    }
-  });
-  calendarSelect = createCalendarSelect(displayData.calendars, displayData.currentCalendar);
-  reminderEditControl.append(icons.reminderExists, ': ', hoursSelect, '-', minutesSelect, ' ', smsCheck.check, smsCheck.label, ' ', emailCheck.check, emailCheck.label, ' ', calendarSelect, ' ', setLink, ' / ', cancelLink);
-  return container.append(reminderEditControl);
-};
-
 createNotificationCheck = function(caption, id, displayData) {
   return {
     check: $('<input>', {
@@ -25013,40 +24990,13 @@ createCalendarSelect = function(calendarsList, currentCalendarId) {
 };
 
 drawReminderView = function() {
-  var deleteLink, displayData, editLink, iconHtml, linkText;
+  var dummy;
   container.html('');
-  linkText = null;
-  iconHtml = null;
   if (reminder.exists()) {
-    displayData = reminder.getDisplayData();
-    require('./interface').renderReminder(reactContainer[0], reminder);
-    iconHtml = icons.reminderExists;
-    linkText = "<span class=\"taist-reminders-linkText\">" + displayData.hours + ":" + displayData.minutes;
-  } else {
-    iconHtml = icons.noReminder;
-    linkText = "";
+    dummy = 1;
   }
-  editLink = $("<a></a>", {
-    click: function() {
-      return drawReminderEditControl();
-    },
-    style: "border-bottom-style:none;"
-  });
-  editLink.append(iconHtml, linkText);
-  container.append(editLink);
-  console.log('rendering finished');
-  if (reminder.exists()) {
-    deleteLink = $('<a></a>', {
-      text: 'X',
-      click: function() {
-        return reminder["delete"](function() {
-          return drawReminderView();
-        });
-      },
-      title: 'Delete'
-    });
-  }
-  return container.append(' (', deleteLink, ')');
+  console.log('before render', reminder);
+  return require('./interface').renderReminder(reactContainer[0], reminder);
 };
 
 icons = {
