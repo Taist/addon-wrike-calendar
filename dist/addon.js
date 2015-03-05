@@ -219,7 +219,8 @@ CalendarEventEditor = React.createFactory(React.createClass({
     return this.updateState(this.props);
   },
   onSave: function() {
-    return console.log('onSave switched off', this.state);
+    var base;
+    return typeof (base = this.props).onSave === "function" ? base.onSave(this.state) : void 0;
   },
   onChangeReminder: function(index, reminder) {
     var reminders;
@@ -920,7 +921,7 @@ Reminder = (function() {
     console.log('reminder.upsert', data);
     eventStartDate = this._updateDateTime(new Date(data.startDate), data.startTime);
     eventEndDate = this._updateDateTime(new Date(data.startDate), data.endTime);
-    return this._updateEvent(eventStartDate, eventEndDate, data.currentCalendar.id, data.reminderMethod, data.reminderMinutes, function() {
+    return this._updateEvent(eventStartDate, eventEndDate, data.currentCalendar.id, data.reminders, function() {
       return console.log('reminder updated');
     });
   };
@@ -940,11 +941,11 @@ Reminder = (function() {
   };
 
   Reminder.prototype._setByDateTime = function(eventStartDate, newCalendarId, notifications, callback) {
-    return this._updateEvent(eventStartDate, eventStartDate, newCalendarId, null, null, callback);
+    return this._updateEvent(eventStartDate, eventStartDate, newCalendarId, null, callback);
   };
 
-  Reminder.prototype._updateEvent = function(eventStartDate, eventEndDate, newCalendarId, method, minutes, callback) {
-    var eventData, newCallback, ref, ref1, ref2;
+  Reminder.prototype._updateEvent = function(eventStartDate, eventEndDate, newCalendarId, reminders, callback) {
+    var eventData, newCallback, ref, ref1;
     eventData = (ref = (ref1 = this._reminderData) != null ? ref1.event : void 0) != null ? ref : {};
     eventData.summary = this._task.data["title"];
     if (eventStartDate) {
@@ -958,16 +959,10 @@ Reminder = (function() {
       };
     }
     eventData.description = "Task link: https://www.wrike.com/open.htm?id=" + this._task.data.id;
-    if (method) {
-      if (!((ref2 = eventData.reminders) != null ? ref2.overrides : void 0)) {
-        eventData.reminders = {
-          useDefault: false,
-          overrides: []
-        };
-      }
-      eventData.reminders.overrides[0] = {
-        method: method,
-        minutes: minutes
+    if (reminders) {
+      eventData.reminders = {
+        useDefault: false,
+        overrides: reminders
       };
     }
     newCallback = (function(_this) {
@@ -984,7 +979,7 @@ Reminder = (function() {
 
   Reminder.prototype.updateForTask = function() {
     if (this.exists()) {
-      return this._updateEvent(null, null, this._reminderData.calendarId, null, null, function() {});
+      return this._updateEvent(null, null, this._reminderData.calendarId, null, function() {});
     }
   };
 

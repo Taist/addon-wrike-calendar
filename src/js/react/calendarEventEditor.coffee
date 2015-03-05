@@ -47,8 +47,7 @@ CalendarEventEditor = React.createFactory React.createClass
     @updateState @props
 
   onSave: () ->
-    console.log 'onSave switched off', @state
-    # @props.onSave?(@state)
+    @props.onSave?(@state)
 
   onChangeReminder: (index, reminder) ->
     console.log 'onChangeReminder', reminder

@@ -110,7 +110,7 @@ class Reminder
     console.log 'reminder.upsert', data
     eventStartDate = @_updateDateTime new Date(data.startDate), data.startTime
     eventEndDate = @_updateDateTime new Date(data.startDate), data.endTime
-    @_updateEvent eventStartDate, eventEndDate, data.currentCalendar.id, data.reminderMethod, data.reminderMinutes, ->
+    @_updateEvent eventStartDate, eventEndDate, data.currentCalendar.id, data.reminders, ->
       console.log 'reminder updated'
 
   set: (hours, minutes, calendarId, useSms, useEmail, callback) ->
@@ -124,9 +124,9 @@ class Reminder
     @_setByDateTime eventStartDate, calendarId, notifications, callback
 
   _setByDateTime: (eventStartDate, newCalendarId, notifications, callback) ->
-    @_updateEvent eventStartDate, eventStartDate, newCalendarId, null, null, callback
+    @_updateEvent eventStartDate, eventStartDate, newCalendarId, null, callback
 
-  _updateEvent: (eventStartDate, eventEndDate, newCalendarId, method, minutes, callback) ->
+  _updateEvent: (eventStartDate, eventEndDate, newCalendarId, reminders, callback) ->
     eventData = @_reminderData?.event ? {}
 
     eventData.summary = @_task.data["title"]
@@ -134,9 +134,7 @@ class Reminder
     eventData.end = {dateTime: eventEndDate} if eventEndDate
     eventData.description = "Task link: https://www.wrike.com/open.htm?id=#{@_task.data.id}"
 
-    if method
-      eventData.reminders = { useDefault: no, overrides: [] } unless eventData.reminders?.overrides
-      eventData.reminders.overrides[0] = { method, minutes }
+    eventData.reminders = { useDefault: no, overrides: reminders } if reminders
 
     newCallback = (newEvent) =>
       @_save newEvent, newCalendarId, callback
@@ -148,7 +146,7 @@ class Reminder
 
   updateForTask: ->
     if @exists()
-      @_updateEvent null, null, @_reminderData.calendarId, null, null, ->
+      @_updateEvent null, null, @_reminderData.calendarId, null, ->
 
   _save: (newEvent, calendarId, callback) ->
     @_reminderData = {event: newEvent, calendarId}
