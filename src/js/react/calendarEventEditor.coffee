@@ -54,9 +54,14 @@ CalendarEventEditor = React.createFactory React.createClass
     reminders[index] = reminder
     @setState { reminders }
 
-  onAddNotification: ->
+  onAddReminder: ->
     reminders = @state.reminders
     reminders.push { method: 'popup', minutes: '10' }
+    @setState { reminders }
+
+  onDeleteReminder: (index) ->
+    reminders = @state.reminders
+    reminders.splice index, 1
     @setState { reminders }
 
   render: ->
@@ -94,8 +99,13 @@ CalendarEventEditor = React.createFactory React.createClass
         div { style: display: 'inline-block' },
           div {},
             @state.reminders.map (reminder, index) =>
-              CalendarReminderEditor { index, reminder, onChange: @onChangeReminder }
+              CalendarReminderEditor {
+                index
+                reminder
+                onChange: @onChangeReminder
+                onDelete: @onDeleteReminder
+              }
           div {},
-            div { onClick: @onAddNotification, className: 'taist-link' }, 'Add notification'
+            div { onClick: @onAddReminder, className: 'taist-link' }, 'Add notification'
 
 module.exports = CalendarEventEditor

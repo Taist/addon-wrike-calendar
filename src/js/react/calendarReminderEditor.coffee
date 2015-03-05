@@ -24,8 +24,10 @@ CalendarReminderEditor = React.createFactory React.createClass
     @setState minutes: minutes, =>
       @props.onChange?(@props.index, @state)
 
+  onDelete: () ->
+    @props.onDelete?(@props.index)
+
   render: ->
-    console.log @props
     div {},
       select {
         value: @state.method
@@ -36,10 +38,16 @@ CalendarReminderEditor = React.createFactory React.createClass
         @reminderMethods.map (m) ->
           option { key: m, value: m }, m
 
-      div { style: display: 'inline-block' },
+      div {
+        style:
+          display: 'inline-block'
+          marginRight: 12
+      },
         TimeDuration {
           minutes: @state.minutes
           onChange: @onChangeReminderTime
         }
+
+      div { onClick: @onDelete, className: 'taist-link' }, 'Delete'
 
 module.exports = CalendarReminderEditor

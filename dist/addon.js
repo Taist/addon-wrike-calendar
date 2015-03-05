@@ -230,13 +230,21 @@ CalendarEventEditor = React.createFactory(React.createClass({
       reminders: reminders
     });
   },
-  onAddNotification: function() {
+  onAddReminder: function() {
     var reminders;
     reminders = this.state.reminders;
     reminders.push({
       method: 'popup',
       minutes: '10'
     });
+    return this.setState({
+      reminders: reminders
+    });
+  },
+  onDeleteReminder: function(index) {
+    var reminders;
+    reminders = this.state.reminders;
+    reminders.splice(index, 1);
     return this.setState({
       reminders: reminders
     });
@@ -305,11 +313,12 @@ CalendarEventEditor = React.createFactory(React.createClass({
         return CalendarReminderEditor({
           index: index,
           reminder: reminder,
-          onChange: _this.onChangeReminder
+          onChange: _this.onChangeReminder,
+          onDelete: _this.onDeleteReminder
         });
       };
     })(this))), div({}, div({
-      onClick: this.onAddNotification,
+      onClick: this.onAddReminder,
       className: 'taist-link'
     }, 'Add notification')))));
   }
@@ -357,8 +366,11 @@ CalendarReminderEditor = React.createFactory(React.createClass({
       };
     })(this));
   },
+  onDelete: function() {
+    var base;
+    return typeof (base = this.props).onDelete === "function" ? base.onDelete(this.props.index) : void 0;
+  },
   render: function() {
-    console.log(this.props);
     return div({}, select({
       value: this.state.method,
       onChange: this.onChangeMethod,
@@ -372,12 +384,16 @@ CalendarReminderEditor = React.createFactory(React.createClass({
       }, m);
     })), div({
       style: {
-        display: 'inline-block'
+        display: 'inline-block',
+        marginRight: 12
       }
     }, TimeDuration({
       minutes: this.state.minutes,
       onChange: this.onChangeReminderTime
-    })));
+    })), div({
+      onClick: this.onDelete,
+      className: 'taist-link'
+    }, 'Delete'));
   }
 }));
 
