@@ -10,11 +10,10 @@ CustomSelect = require './customSelect'
 CalendarReminderEditor = require './calendarReminderEditor'
 
 CalendarEventEditor = React.createFactory React.createClass
+  calendarsList: []
+
   onChangeDate: (startDate) ->
     @setState { startDate }
-    console.log 'New date is', startDate
-
-  calendarsList: []
 
   getCalendarById: (calendarId) ->
     @calendarsList.filter( (c) -> c.id is calendarId )[0]
@@ -30,6 +29,7 @@ CalendarEventEditor = React.createFactory React.createClass
       endTime: reminderData.endTime
       startDate: reminderData.startDate
       reminders: reminderData.reminders
+      mode: if reminderData.exists then 'view' else 'new'
 
   componentWillMount: () ->
     @updateState @props
@@ -46,8 +46,12 @@ CalendarEventEditor = React.createFactory React.createClass
   onReset: () ->
     @updateState @props
 
-  onSave: () ->
+  onSave: ->
     @props.onSave?(@state)
+    @setState mode: 'view'
+
+  onDelete: ->
+    @props.onDelete?()
 
   onChangeReminder: (index, reminder) ->
     reminders = @state.reminders
@@ -64,48 +68,63 @@ CalendarEventEditor = React.createFactory React.createClass
     reminders.splice index, 1
     @setState { reminders }
 
+  onEditEvent: ->
+    @setState mode: 'edit'
+
+
   render: ->
     reminderData = @props.reminder.getDisplayData()
 
     div { className: 'increaseFontSize', style: paddingLeft: 28, marginBottom: 8 },
-      div {},
-        Calendar {
-          format: 'MM/DD/YYYY'
-          date: @state.startDate
-          onChange: @onChangeDate
-          closeOnSelect: true
-        }
+      if @state.mode is 'new'
+        div { className: 'taist-link', onClick: @onEditEvent }, 'Create new event in the Google Calendar'
 
-        div { style: display: 'inline-block' },
-          TimeIntervalSelector
-            startTime: @state.startTime
-            endTime: @state.endTime
-            onChange: @onChangeTimeInterval
-
-        div { style: marginLeft: 12, display: 'inline-block' },
-          CustomSelect {
-            selected: { id: @state.currentCalendar.id, value: @state.currentCalendar.summary }
-            onChange: @onChangeCalendar
-            options: @calendarsList.map (c) -> { id: c.id, value: c.summary }
-          }
-
-        button { onClick: @onSave, style: marginLeft: 12 }, 'Save'
-
-        button { onClick: @onReset, style: marginLeft: 12 }, 'Reset'
-
-      div {},
-        div { style: display: 'inline-block', verticalAlign: 'top', paddingRight: 12 },
-          'Notifications'
-        div { style: display: 'inline-block' },
+      if @state.mode isnt 'new'
+        div {},
           div {},
-            @state.reminders.map (reminder, index) =>
-              CalendarReminderEditor {
-                index
-                reminder
-                onChange: @onChangeReminder
-                onDelete: @onDeleteReminder
+            Calendar {
+              format: 'MM/DD/YYYY'
+              date: @state.startDate
+              onChange: @onChangeDate
+              closeOnSelect: true
+            }
+
+            div { style: display: 'inline-block' },
+              TimeIntervalSelector
+                startTime: @state.startTime
+                endTime: @state.endTime
+                onChange: @onChangeTimeInterval
+
+            div { style: marginLeft: 12, display: 'inline-block' },
+              CustomSelect {
+                selected: { id: @state.currentCalendar.id, value: @state.currentCalendar.summary }
+                onChange: @onChangeCalendar
+                options: @calendarsList.map (c) -> { id: c.id, value: c.summary }
               }
-          div {},
-            div { onClick: @onAddReminder, className: 'taist-link' }, 'Add notification'
+
+            if @state.mode is 'view'
+              div { className: 'taist-link', onClick: @onEditEvent, style: marginLeft: 12 }, 'Edit'
+
+            if @state.mode is 'edit'
+              div { style: display: 'inline-block' },
+                div { className: 'taist-link', onClick: @onSave, style: marginLeft: 12 }, 'Save'
+                div { className: 'taist-link', onClick: @onDelete, style: marginLeft: 12 }, 'Delete'
+                div { className: 'taist-link', onClick: @onReset, style: marginLeft: 12 }, 'Cancel'
+
+      if @state.mode is 'edit'
+        div {},
+          div { style: display: 'inline-block', verticalAlign: 'top', paddingRight: 12 },
+            'Notifications'
+          div { style: display: 'inline-block' },
+            div {},
+              @state.reminders.map (reminder, index) =>
+                CalendarReminderEditor {
+                  index
+                  reminder
+                  onChange: @onChangeReminder
+                  onDelete: @onDeleteReminder
+                }
+            div {},
+              div { onClick: @onAddReminder, className: 'taist-link' }, 'Add notification'
 
 module.exports = CalendarEventEditor

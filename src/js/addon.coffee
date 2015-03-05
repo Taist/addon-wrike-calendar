@@ -20,17 +20,19 @@ start = (ta) ->
     wrikeUtils.onCurrentTaskSave (updatedTask) -> updateReminderForTask updatedTask
 
 draw = (task) ->
-  if wrikeUtils.currentUserIsResponsibleForTask task
+  # if wrikeUtils.currentUserIsResponsibleForTask task
+  if true
     reminder = new Reminder task
-    if reminder.canBeSet()
 
-      drawRemindersContainer()
+    drawRemindersContainer()
 
-      if not calendarUtils.authorized()
-        drawAuthorization()
-      else
-        reminder.load ->
-          drawReminderView()
+    if not calendarUtils.authorized()
+      drawAuthorization()
+    else
+      console.log 'before load'
+      reminder.load ->
+        console.log 'on load'
+        drawReminderView()
 
 updateReminderForTask = (task)->
   if calendarUtils.authorized()
@@ -91,9 +93,6 @@ createCalendarSelect = (calendarsList, currentCalendarId) ->
 
 drawReminderView = ->
   container.html ''
-
-  if reminder.exists()
-    dummy = 1
 
   console.log 'before render', reminder
   require('./interface').renderReminder reactContainer[0], reminder

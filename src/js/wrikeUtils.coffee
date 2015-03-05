@@ -30,6 +30,7 @@ wrikeUtils =
 
   onCurrentTaskChange: (callback) ->
     app.api.wait.change (=> @currentTask()), (task) ->
+      console.log 'onCurrentTaskChange', task
       if task?
         app.api.wait.once (-> task.data.title?), ->
           callback task

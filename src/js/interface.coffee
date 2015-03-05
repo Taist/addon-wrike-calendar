@@ -6,4 +6,8 @@ module.exports =
     onSave = (state) ->
       reminder.upsert state
 
-    React.render ( CalendarEventEditor { reminder, onSave: onSave } ), container
+    onDelete = ->
+      reminder.delete ->
+        React.render ( CalendarEventEditor { reminder, onSave, onDelete } ), container
+
+    React.render ( CalendarEventEditor { reminder, onSave, onDelete } ), container

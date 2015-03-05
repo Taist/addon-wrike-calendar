@@ -8,6 +8,7 @@ class Reminder
   _defaultSettings: null
   constructor: (@_task) ->
   load: (callback) ->
+    console.log 'LOAD'
     Reminder._loadCalendars =>
       @_loadReminderData -> callback()
 
@@ -44,8 +45,6 @@ class Reminder
                 event: event
                 calendarId: calendarId
             callback()
-
-  canBeSet: -> @_getRawBaseValue()?
 
   _getBaseDateTime: -> new Date @_getRawBaseValue()
 
@@ -89,7 +88,8 @@ class Reminder
       reminderMethod,
       reminderMinutes,
 
-      reminders
+      reminders,
+      exists: @exists()
     }
 
     console.log displayData
