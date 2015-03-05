@@ -160,11 +160,11 @@ module.exports = {
 };
 
 },{"./react/calendarEventEditor":4,"react":185}],4:[function(require,module,exports){
-var Calendar, CalendarEventEditor, CalendarReminderEditor, CustomSelect, React, TimeDuration, TimeIntervalSelector, a, button, div, option, ref, select;
+var Calendar, CalendarEventEditor, CalendarReminderEditor, CustomSelect, React, TimeDuration, TimeIntervalSelector, button, div, option, ref, select;
 
 React = require('react');
 
-ref = React.DOM, div = ref.div, select = ref.select, option = ref.option, button = ref.button, a = ref.a;
+ref = React.DOM, div = ref.div, select = ref.select, option = ref.option, button = ref.button;
 
 Calendar = require('react-input-calendar');
 
@@ -308,8 +308,7 @@ CalendarEventEditor = React.createFactory(React.createClass({
           onChange: _this.onChangeReminder
         });
       };
-    })(this))), div({}, a({
-      href: '#',
+    })(this))), div({}, div({
       onClick: this.onAddNotification,
       className: 'taist-link'
     }, 'Add notification')))));

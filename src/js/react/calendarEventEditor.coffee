@@ -1,6 +1,6 @@
 React = require 'react'
 
-{ div, select, option, button, a } = React.DOM
+{ div, select, option, button } = React.DOM
 
 Calendar = require 'react-input-calendar'
 
@@ -96,6 +96,6 @@ CalendarEventEditor = React.createFactory React.createClass
             @state.reminders.map (reminder, index) =>
               CalendarReminderEditor { index, reminder, onChange: @onChangeReminder }
           div {},
-            a { href: '#', onClick: @onAddNotification, className: 'taist-link' }, 'Add notification'
+            div { onClick: @onAddNotification, className: 'taist-link' }, 'Add notification'
 
 module.exports = CalendarEventEditor

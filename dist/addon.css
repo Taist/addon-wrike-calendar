@@ -1,9 +1,11 @@
-a.taist-link {
+div.taist-link {
 	text-decoration: none;
 	color: blue;
+	cursor: pointer;
+	display: inline-block;
 }
 
-a.taist-link:hover {
+div.taist-link:hover {
 	text-decoration: underline;
 }
 
