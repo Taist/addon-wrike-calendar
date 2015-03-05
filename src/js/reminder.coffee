@@ -6,11 +6,16 @@ class Reminder
   @_calendarsList: null
   _reminderData: null
   _defaultSettings: null
+  _isAutorizedOnGoogle: false
+
   constructor: (@_task) ->
   load: (callback) ->
-    console.log 'LOAD'
-    Reminder._loadCalendars =>
-      @_loadReminderData -> callback()
+    @_isAutorizedOnGoogle = calendarUtils.authorized()
+    unless @_isAutorizedOnGoogle
+      callback()
+    else
+      Reminder._loadCalendars =>
+        @_loadReminderData -> callback()
 
   exists: -> @_reminderData?
 
@@ -29,9 +34,6 @@ class Reminder
       @_defaultSettings = defaultSettingsData
 
       app.api.userData.get @_task.data.id, (error, existingReminderData) =>
-
-        console.log 'existingReminderData', existingReminderData
-
         eventId = existingReminderData?.eventId
         calendarId = existingReminderData?.calendarId
 
@@ -51,6 +53,8 @@ class Reminder
   _getRawBaseValue: -> @_task.data["startDate"] ? @_task.data["finishDate"]
 
   getDisplayData: ->
+    unless @_isAutorizedOnGoogle
+      return null
 
     if @exists()
       startDate = new Date @_reminderData.event.start.dateTime
@@ -92,7 +96,6 @@ class Reminder
       exists: @exists()
     }
 
-    console.log displayData
     return displayData
 
   delete: (callback) ->
@@ -107,7 +110,6 @@ class Reminder
     return date
 
   upsert: (data) ->
-    console.log 'reminder.upsert', data
     eventStartDate = @_updateDateTime new Date(data.startDate), data.startTime
     eventEndDate = @_updateDateTime new Date(data.startDate), data.endTime
     @_updateEvent eventStartDate, eventEndDate, data.currentCalendar.id, data.reminders, ->

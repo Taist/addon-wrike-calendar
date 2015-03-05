@@ -1,13 +1,26 @@
+React = require 'react'
+CalendarEventEditor = require './react/calendarEventEditor'
+
+wrikeUtils = require './wrikeUtils'
+calendarUtils = require './calendarUtils'
+
 module.exports =
   renderReminder: (container, reminder) ->
-    React = require 'react'
-    CalendarEventEditor = require './react/calendarEventEditor'
 
     onSave = (state) ->
       reminder.upsert state
 
     onDelete = ->
       reminder.delete ->
-        React.render ( CalendarEventEditor { reminder, onSave, onDelete } ), container
+        render()
 
-    React.render ( CalendarEventEditor { reminder, onSave, onDelete } ), container
+    onAutorize = ->
+      calendarUtils.authorize ->
+        currentTask = wrikeUtils.currentTask()
+        reminder.load ->
+          render()
+
+    render = ->
+      React.render ( CalendarEventEditor { reminder, onSave, onDelete, onAutorize } ), container
+
+    render()

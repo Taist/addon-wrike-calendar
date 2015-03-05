@@ -21,6 +21,10 @@ CalendarEventEditor = React.createFactory React.createClass
   updateState: (newProps) ->
     reminderData = newProps.reminder.getDisplayData()
 
+    unless reminderData
+      @setState mode: 'autorization'
+      return
+
     @calendarsList = reminderData.calendars
 
     @setState
@@ -53,6 +57,9 @@ CalendarEventEditor = React.createFactory React.createClass
   onDelete: ->
     @props.onDelete?()
 
+  onAutorize: ->
+    @props.onAutorize?()
+
   onChangeReminder: (index, reminder) ->
     reminders = @state.reminders
     reminders[index] = reminder
@@ -71,15 +78,15 @@ CalendarEventEditor = React.createFactory React.createClass
   onEditEvent: ->
     @setState mode: 'edit'
 
-
   render: ->
-    reminderData = @props.reminder.getDisplayData()
-
     div { className: 'increaseFontSize', style: paddingLeft: 28, marginBottom: 8 },
+      if @state.mode is 'autorization'
+        div { className: 'taist-link', onClick: @onAutorize }, 'Authorize Google Calendar'
+
       if @state.mode is 'new'
         div { className: 'taist-link', onClick: @onEditEvent }, 'Create new event in the Google Calendar'
 
-      if @state.mode isnt 'new'
+      if @state.mode is 'view' or @state.mode is 'edit'
         div {},
           div {},
             Calendar {

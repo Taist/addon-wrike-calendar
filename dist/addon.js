@@ -144,32 +144,49 @@ calendarUtils = {
 module.exports = calendarUtils;
 
 },{"./app":1}],3:[function(require,module,exports){
+var CalendarEventEditor, React, calendarUtils, wrikeUtils;
+
+React = require('react');
+
+CalendarEventEditor = require('./react/calendarEventEditor');
+
+wrikeUtils = require('./wrikeUtils');
+
+calendarUtils = require('./calendarUtils');
+
 module.exports = {
   renderReminder: function(container, reminder) {
-    var CalendarEventEditor, React, onDelete, onSave;
-    React = require('react');
-    CalendarEventEditor = require('./react/calendarEventEditor');
+    var onAutorize, onDelete, onSave, render;
     onSave = function(state) {
       return reminder.upsert(state);
     };
     onDelete = function() {
       return reminder["delete"](function() {
-        return React.render(CalendarEventEditor({
-          reminder: reminder,
-          onSave: onSave,
-          onDelete: onDelete
-        }), container);
+        return render();
       });
     };
-    return React.render(CalendarEventEditor({
-      reminder: reminder,
-      onSave: onSave,
-      onDelete: onDelete
-    }), container);
+    onAutorize = function() {
+      return calendarUtils.authorize(function() {
+        var currentTask;
+        currentTask = wrikeUtils.currentTask();
+        return reminder.load(function() {
+          return render();
+        });
+      });
+    };
+    render = function() {
+      return React.render(CalendarEventEditor({
+        reminder: reminder,
+        onSave: onSave,
+        onDelete: onDelete,
+        onAutorize: onAutorize
+      }), container);
+    };
+    return render();
   }
 };
 
-},{"./react/calendarEventEditor":4,"react":185}],4:[function(require,module,exports){
+},{"./calendarUtils":2,"./react/calendarEventEditor":4,"./wrikeUtils":11,"react":185}],4:[function(require,module,exports){
 var Calendar, CalendarEventEditor, CalendarReminderEditor, CustomSelect, React, TimeDuration, TimeIntervalSelector, button, div, option, ref, select;
 
 React = require('react');
@@ -201,6 +218,12 @@ CalendarEventEditor = React.createFactory(React.createClass({
   updateState: function(newProps) {
     var reminderData;
     reminderData = newProps.reminder.getDisplayData();
+    if (!reminderData) {
+      this.setState({
+        mode: 'autorization'
+      });
+      return;
+    }
     this.calendarsList = reminderData.calendars;
     return this.setState({
       currentCalendar: this.getCalendarById(reminderData.currentCalendar),
@@ -241,6 +264,10 @@ CalendarEventEditor = React.createFactory(React.createClass({
     var base;
     return typeof (base = this.props).onDelete === "function" ? base.onDelete() : void 0;
   },
+  onAutorize: function() {
+    var base;
+    return typeof (base = this.props).onAutorize === "function" ? base.onAutorize() : void 0;
+  },
   onChangeReminder: function(index, reminder) {
     var reminders;
     reminders = this.state.reminders;
@@ -274,18 +301,19 @@ CalendarEventEditor = React.createFactory(React.createClass({
     });
   },
   render: function() {
-    var reminderData;
-    reminderData = this.props.reminder.getDisplayData();
     return div({
       className: 'increaseFontSize',
       style: {
         paddingLeft: 28,
         marginBottom: 8
       }
-    }, this.state.mode === 'new' ? div({
+    }, this.state.mode === 'autorization' ? div({
+      className: 'taist-link',
+      onClick: this.onAutorize
+    }, 'Authorize Google Calendar') : void 0, this.state.mode === 'new' ? div({
       className: 'taist-link',
       onClick: this.onEditEvent
-    }, 'Create new event in the Google Calendar') : void 0, this.state.mode !== 'new' ? div({}, div({}, Calendar({
+    }, 'Create new event in the Google Calendar') : void 0, this.state.mode === 'view' || this.state.mode === 'edit' ? div({}, div({}, Calendar({
       format: 'MM/DD/YYYY',
       date: this.state.startDate,
       onChange: this.onChangeDate,
@@ -865,19 +893,25 @@ Reminder = (function() {
 
   Reminder.prototype._defaultSettings = null;
 
+  Reminder.prototype._isAutorizedOnGoogle = false;
+
   function Reminder(_task) {
     this._task = _task;
   }
 
   Reminder.prototype.load = function(callback) {
-    console.log('LOAD');
-    return Reminder._loadCalendars((function(_this) {
-      return function() {
-        return _this._loadReminderData(function() {
-          return callback();
-        });
-      };
-    })(this));
+    this._isAutorizedOnGoogle = calendarUtils.authorized();
+    if (!this._isAutorizedOnGoogle) {
+      return callback();
+    } else {
+      return Reminder._loadCalendars((function(_this) {
+        return function() {
+          return _this._loadReminderData(function() {
+            return callback();
+          });
+        };
+      })(this));
+    }
   };
 
   Reminder.prototype.exists = function() {
@@ -904,7 +938,6 @@ Reminder = (function() {
         _this._defaultSettings = defaultSettingsData;
         return app.api.userData.get(_this._task.data.id, function(error, existingReminderData) {
           var calendarId, eventId;
-          console.log('existingReminderData', existingReminderData);
           eventId = existingReminderData != null ? existingReminderData.eventId : void 0;
           calendarId = existingReminderData != null ? existingReminderData.calendarId : void 0;
           if ((eventId == null) || (calendarId == null)) {
@@ -938,6 +971,9 @@ Reminder = (function() {
 
   Reminder.prototype.getDisplayData = function() {
     var currentSettings, displayData, endDate, endTime, i, len, notification, ref, ref1, ref2, ref3, ref4, reminderMethod, reminderMinutes, reminders, startDate, startTime, usedNotifications;
+    if (!this._isAutorizedOnGoogle) {
+      return null;
+    }
     if (this.exists()) {
       startDate = new Date(this._reminderData.event.start.dateTime);
       startTime = startDate.getHours() * 60 + startDate.getMinutes();
@@ -972,7 +1008,6 @@ Reminder = (function() {
       reminders: reminders,
       exists: this.exists()
     };
-    console.log(displayData);
     return displayData;
   };
 
@@ -995,7 +1030,6 @@ Reminder = (function() {
 
   Reminder.prototype.upsert = function(data) {
     var eventEndDate, eventStartDate;
-    console.log('reminder.upsert', data);
     eventStartDate = this._updateDateTime(new Date(data.startDate), data.startTime);
     eventEndDate = this._updateDateTime(new Date(data.startDate), data.endTime);
     return this._updateEvent(eventStartDate, eventEndDate, data.currentCalendar.id, data.reminders, function() {
@@ -25211,19 +25245,11 @@ start = function(ta) {
 };
 
 draw = function(task) {
-  if (true) {
-    reminder = new Reminder(task);
-    drawRemindersContainer();
-    if (!calendarUtils.authorized()) {
-      return drawAuthorization();
-    } else {
-      console.log('before load');
-      return reminder.load(function() {
-        console.log('on load');
-        return drawReminderView();
-      });
-    }
-  }
+  reminder = new Reminder(task);
+  drawRemindersContainer();
+  return reminder.load(function() {
+    return drawReminderView();
+  });
 };
 
 updateReminderForTask = function(task) {
@@ -25311,7 +25337,6 @@ createCalendarSelect = function(calendarsList, currentCalendarId) {
 };
 
 drawReminderView = function() {
-  container.html('');
   console.log('before render', reminder);
   return require('./interface').renderReminder(reactContainer[0], reminder);
 };
