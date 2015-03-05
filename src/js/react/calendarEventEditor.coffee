@@ -1,6 +1,6 @@
 React = require 'react'
 
-{ div, select, option, button } = React.DOM
+{ div, select, option, button, a } = React.DOM
 
 Calendar = require 'react-input-calendar'
 
@@ -50,9 +50,13 @@ CalendarEventEditor = React.createFactory React.createClass
     @props.onSave?(@state)
 
   onChangeReminder: (index, reminder) ->
-    console.log 'onChangeReminder', reminder
     reminders = @state.reminders
     reminders[index] = reminder
+    @setState { reminders }
+
+  onAddNotification: ->
+    reminders = @state.reminders
+    reminders.push { method: 'popup', minutes: '10' }
     @setState { reminders }
 
   render: ->
@@ -88,7 +92,10 @@ CalendarEventEditor = React.createFactory React.createClass
         div { style: display: 'inline-block', verticalAlign: 'top', paddingRight: 12 },
           'Notifications'
         div { style: display: 'inline-block' },
-          @state.reminders.map (reminder, index) =>
-            CalendarReminderEditor { index, reminder, onChange: @onChangeReminder }
+          div {},
+            @state.reminders.map (reminder, index) =>
+              CalendarReminderEditor { index, reminder, onChange: @onChangeReminder }
+          div {},
+            a { href: '#', onClick: @onAddNotification, className: 'taist-link' }, 'Add notification'
 
 module.exports = CalendarEventEditor

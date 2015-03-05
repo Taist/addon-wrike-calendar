@@ -160,11 +160,11 @@ module.exports = {
 };
 
 },{"./react/calendarEventEditor":4,"react":185}],4:[function(require,module,exports){
-var Calendar, CalendarEventEditor, CalendarReminderEditor, CustomSelect, React, TimeDuration, TimeIntervalSelector, button, div, option, ref, select;
+var Calendar, CalendarEventEditor, CalendarReminderEditor, CustomSelect, React, TimeDuration, TimeIntervalSelector, a, button, div, option, ref, select;
 
 React = require('react');
 
-ref = React.DOM, div = ref.div, select = ref.select, option = ref.option, button = ref.button;
+ref = React.DOM, div = ref.div, select = ref.select, option = ref.option, button = ref.button, a = ref.a;
 
 Calendar = require('react-input-calendar');
 
@@ -224,9 +224,19 @@ CalendarEventEditor = React.createFactory(React.createClass({
   },
   onChangeReminder: function(index, reminder) {
     var reminders;
-    console.log('onChangeReminder', reminder);
     reminders = this.state.reminders;
     reminders[index] = reminder;
+    return this.setState({
+      reminders: reminders
+    });
+  },
+  onAddNotification: function() {
+    var reminders;
+    reminders = this.state.reminders;
+    reminders.push({
+      method: 'popup',
+      minutes: '10'
+    });
     return this.setState({
       reminders: reminders
     });
@@ -290,7 +300,7 @@ CalendarEventEditor = React.createFactory(React.createClass({
       style: {
         display: 'inline-block'
       }
-    }, this.state.reminders.map((function(_this) {
+    }, div({}, this.state.reminders.map((function(_this) {
       return function(reminder, index) {
         return CalendarReminderEditor({
           index: index,
@@ -298,7 +308,11 @@ CalendarEventEditor = React.createFactory(React.createClass({
           onChange: _this.onChangeReminder
         });
       };
-    })(this)))));
+    })(this))), div({}, a({
+      href: '#',
+      onClick: this.onAddNotification,
+      className: 'taist-link'
+    }, 'Add notification')))));
   }
 }));
 
@@ -543,17 +557,23 @@ TimeDuration = React.createFactory(React.createClass({
   },
   updateState: function(props) {
     var i, len, quantity, ref1, result;
-    ref1 = this.quantities;
-    for (i = 0, len = ref1.length; i < len; i++) {
-      quantity = ref1[i];
-      if (!(props.minutes % quantity.size)) {
-        result = {
-          quantity: quantity.size,
-          number: props.minutes / quantity.size
-        };
+    if (props.minutes === 0) {
+      return this.setState({
+        number: 0
+      });
+    } else {
+      ref1 = this.quantities;
+      for (i = 0, len = ref1.length; i < len; i++) {
+        quantity = ref1[i];
+        if (!(props.minutes % quantity.size)) {
+          result = {
+            quantity: quantity.size,
+            number: props.minutes / quantity.size
+          };
+        }
       }
+      return this.setState(result);
     }
-    return this.setState(result);
   },
   componentWillMount: function() {
     return this.updateState(this.props);
@@ -563,7 +583,6 @@ TimeDuration = React.createFactory(React.createClass({
   },
   onChange: function(number, quantity) {
     var base, minutes;
-    console.log(number, quantity);
     minutes = number * quantity;
     this.updateState({
       minutes: minutes

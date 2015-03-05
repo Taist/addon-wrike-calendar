@@ -14,13 +14,16 @@ TimeDuration = React.createFactory React.createClass
     number: 10
 
   updateState: (props) ->
-    for quantity in @quantities
-      unless props.minutes % quantity.size
-        result = {
-          quantity: quantity.size
-          number: props.minutes / quantity.size
-        }
-    @setState result
+    if props.minutes is 0
+      @setState number: 0
+    else
+      for quantity in @quantities
+        unless props.minutes % quantity.size
+          result = {
+            quantity: quantity.size
+            number: props.minutes / quantity.size
+          }
+      @setState result
 
   componentWillMount: () ->
     @updateState @props
@@ -29,7 +32,6 @@ TimeDuration = React.createFactory React.createClass
     @updateState nextProps
 
   onChange: (number, quantity) ->
-    console.log number, quantity
     minutes = number * quantity
     @updateState { minutes }
     @props.onChange?(minutes)
