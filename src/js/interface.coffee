@@ -1,9 +1,9 @@
 module.exports =
   renderReminder: (container, reminder) ->
     React = require 'react'
-    ReminderEditor = require './react/reminderEditor'
+    CalendarEventEditor = require './react/calendarEventEditor'
 
     onSave = (state) ->
       reminder.upsert state
 
-    React.render ( ReminderEditor { reminder, onSave: onSave } ), container
+    React.render ( CalendarEventEditor { reminder, onSave: onSave } ), container

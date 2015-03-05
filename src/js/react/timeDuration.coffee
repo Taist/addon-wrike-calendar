@@ -49,7 +49,7 @@ TimeDuration = React.createFactory React.createClass
         style:
           textAlign: 'right'
           width: 40
-          marginRight: 4
+          marginRight: 8
       }
 
       select { value: @state.quantity, onChange: @onChangeQuantity },

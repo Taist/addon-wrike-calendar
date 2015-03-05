@@ -7,10 +7,9 @@ Calendar = require 'react-input-calendar'
 TimeIntervalSelector = require './timeIntervalSelector'
 TimeDuration = require './timeDuration'
 CustomSelect = require './customSelect'
+CalendarReminderEditor = require './calendarReminderEditor'
 
-ReminderEditor = React.createFactory React.createClass
-  reminderMethods: [ 'popup', 'email', 'sms' ]
-
+CalendarEventEditor = React.createFactory React.createClass
   onChangeDate: (startDate) ->
     @setState { startDate }
     console.log 'New date is', startDate
@@ -29,9 +28,8 @@ ReminderEditor = React.createFactory React.createClass
       currentCalendar: @getCalendarById reminderData.currentCalendar
       startTime: reminderData.startTime
       endTime: reminderData.endTime
-      reminderMethod: reminderData.reminderMethod or @reminderMethods[0]
-      reminderMinutes: reminderData.reminderMinutes or 10
       startDate: reminderData.startDate
+      reminders: reminderData.reminders
 
   componentWillMount: () ->
     @updateState @props
@@ -45,17 +43,18 @@ ReminderEditor = React.createFactory React.createClass
   onChangeCalendar: (calendar) ->
     @setState currentCalendar: @getCalendarById calendar.id
 
-  onChangeMethod: (event) ->
-    @setState reminderMethod: event.target.value
-
-  onChangeReminderTime: (minutes) ->
-    @setState reminderMinutes: minutes
-
   onReset: () ->
     @updateState @props
 
   onSave: () ->
-    @props.onSave?(@state)
+    console.log 'onSave switched off', @state
+    # @props.onSave?(@state)
+
+  onChangeReminder: (index, reminder) ->
+    console.log 'onChangeReminder', reminder
+    reminders = @state.reminders
+    reminders[index] = reminder
+    @setState { reminders }
 
   render: ->
     reminderData = @props.reminder.getDisplayData()
@@ -86,15 +85,11 @@ ReminderEditor = React.createFactory React.createClass
 
         button { onClick: @onReset, style: marginLeft: 12 }, 'Reset'
 
-      div {}, 'Notifications',
-        select { value: @state.reminderMethod, onChange: @onChangeMethod },
-          @reminderMethods.map (m) ->
-            option { key: m, value: m }, m
-
+      div {},
+        div { style: display: 'inline-block', verticalAlign: 'top', paddingRight: 12 },
+          'Notifications'
         div { style: display: 'inline-block' },
-          TimeDuration {
-            minutes: @state.reminderMinutes
-            onChange: @onChangeReminderTime
-          }
+          @state.reminders.map (reminder, index) =>
+            CalendarReminderEditor { index, reminder, onChange: @onChangeReminder }
 
-module.exports = ReminderEditor
+module.exports = CalendarEventEditor

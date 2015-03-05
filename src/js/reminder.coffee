@@ -87,7 +87,9 @@ class Reminder
       startTime,
       endTime,
       reminderMethod,
-      reminderMinutes
+      reminderMinutes,
+
+      reminders
     }
 
     console.log displayData
