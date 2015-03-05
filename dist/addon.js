@@ -313,7 +313,19 @@ CalendarEventEditor = React.createFactory(React.createClass({
     }, 'Authorize Google Calendar') : void 0, this.state.mode === 'new' ? div({
       className: 'taist-link',
       onClick: this.onEditEvent
-    }, 'Create new event in the Google Calendar') : void 0, this.state.mode === 'view' || this.state.mode === 'edit' ? div({}, div({}, Calendar({
+    }, 'Create new event in the Google Calendar') : void 0, this.state.mode === 'view' || this.state.mode === 'edit' ? div({}, div({
+      style: {
+        display: 'inline-block',
+        position: 'relative'
+      }
+    }, this.state.mode === 'view' ? div({
+      style: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        zIndex: 2048
+      }
+    }, '') : void 0, Calendar({
       format: 'MM/DD/YYYY',
       date: this.state.startDate,
       onChange: this.onChangeDate,
@@ -343,7 +355,11 @@ CalendarEventEditor = React.createFactory(React.createClass({
           value: c.summary
         };
       })
-    })), this.state.mode === 'view' ? div({
+    }))), div({
+      style: {
+        display: 'inline-block'
+      }
+    }, this.state.mode === 'view' ? div({
       className: 'taist-link',
       onClick: this.onEditEvent,
       style: {

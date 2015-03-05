@@ -88,7 +88,16 @@ CalendarEventEditor = React.createFactory React.createClass
 
       if @state.mode is 'view' or @state.mode is 'edit'
         div {},
-          div {},
+          div { style: display: 'inline-block', position: 'relative' },
+            if @state.mode is 'view'
+              div {
+                style:
+                  position: 'absolute'
+                  width: '100%'
+                  height: '100%'
+                  zIndex: 2048
+              }, ''
+
             Calendar {
               format: 'MM/DD/YYYY'
               date: @state.startDate
@@ -109,6 +118,7 @@ CalendarEventEditor = React.createFactory React.createClass
                 options: @calendarsList.map (c) -> { id: c.id, value: c.summary }
               }
 
+          div { style: display: 'inline-block' },
             if @state.mode is 'view'
               div { className: 'taist-link', onClick: @onEditEvent, style: marginLeft: 12 }, 'Edit'
 
