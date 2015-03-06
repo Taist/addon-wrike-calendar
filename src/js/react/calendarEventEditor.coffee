@@ -80,8 +80,8 @@ CalendarEventEditor = React.createFactory React.createClass
 
   getEventDescription: ->
     dateOptions =
-      weekday: 'long'
-      year: 'numeric'
+      weekday: 'short'
+      year: 'numeric' if @state.startDate.getYear() isnt new Date().getYear()
       month: 'long'
       day: 'numeric'
 
@@ -95,12 +95,13 @@ CalendarEventEditor = React.createFactory React.createClass
     endTime.setHours 0, @state.endTime
     console.log @state.startDate, @state.startTime, startTime
 
-    @state.startDate.toLocaleString(navigator.language, dateOptions) + ' ' +
-    startTime.toLocaleString(navigator.language, timeOptions) + ' - ' +
-    endTime.toLocaleString(navigator.language, timeOptions)
+    language = navigator.language
+    @state.startDate.toLocaleString(language, dateOptions) + ' ' +
+    startTime.toLocaleString(language, timeOptions).toLowerCase() + ' - ' +
+    endTime.toLocaleString(language, timeOptions).toLowerCase()
 
   render: ->
-    div { className: 'taist-font-size', style: paddingLeft: 28, marginBottom: 12 },
+    div { className: 'taist-reminders-container', style: paddingLeft: 28, marginBottom: 12 },
       if @state.mode is 'autorization'
         div { className: 'taist-link', onClick: @onAuthorize }, 'Authorize calendar addon'
 
@@ -149,7 +150,7 @@ CalendarEventEditor = React.createFactory React.createClass
                   onDelete: @onDeleteReminder
                 }
             div {},
-              div { onClick: @onAddReminder, className: 'taist-link', style: marginTop: 4 },
+              div { onClick: @onAddReminder, className: 'taist-link', style: marginTop: 8 },
                 'Add notification'
 
 module.exports = CalendarEventEditor

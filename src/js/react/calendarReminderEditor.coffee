@@ -1,4 +1,5 @@
 React = require 'react'
+awesomeIcons = require './awesomeIcons'
 
 { div, select, option } = React.DOM
 
@@ -28,7 +29,7 @@ CalendarReminderEditor = React.createFactory React.createClass
     @props.onDelete?(@props.index)
 
   render: ->
-    div {},
+    div { style: marginTop: 4 },
       select {
         value: @state.method
         onChange: @onChangeMethod
@@ -41,13 +42,23 @@ CalendarReminderEditor = React.createFactory React.createClass
       div {
         style:
           display: 'inline-block'
-          marginRight: 12
       },
         TimeDuration {
           minutes: @state.minutes
           onChange: @onChangeReminderTime
         }
 
-      div { onClick: @onDelete, className: 'taist-link' }, 'Delete'
+      div {
+        onClick: @onDelete,
+        className: 'taist-link'
+        style:
+          position: 'relative'
+          top: 3
+          left: 3
+          width: 15
+          height: 15
+          backgroundImage: "url(#{awesomeIcons.get 'remove'})"
+          backgroundSize: 'contain'
+      }
 
 module.exports = CalendarReminderEditor

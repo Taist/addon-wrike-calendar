@@ -1,24 +1,30 @@
 div.taist-link {
-	text-decoration: none;
-	color: blue;
+	font-family: 'lucida grande', 'Segoe UI', arial, verdana, 'lucida sans unicode', tahoma, sans-serif;
+	color: rgb(80, 79, 79);
 	cursor: pointer;
 	display: inline-block;
+	font-size: 12px;
+	font-weight: normal;
 }
 
 div.taist-link:hover {
-	text-decoration: underline;
 }
 
 .taist-reminders-container {
-	padding-left: 20px;
+	font-size: 12px;
 }
 
-.taist-reminders-time-input {
+
+.taist-reminders-container input{
+	font-size: 12px;
+	padding: 1px 4px 1px 4px;
+	box-sizing: border-box;
 }
 
-.taist-reminders-reminder-icon {
-	height: 16px;
-	width: 16px;
+.taist-reminders-container select {
+	padding-top: 1px;
+	padding-bottom: 1px;
+	font-size: 100%;
 }
 
 .taist-reminders-linkText {
@@ -194,14 +200,6 @@ div.taist-link:hover {
 	top: 3px;
 
 	background-size: contain;
-}
-
-.taist-font-size * {
-	font-size: 12px;
-}
-
-.taist-font-size select {
-	font-size: 100%;
 }
 
 .input-calendar .fa-calendar {
