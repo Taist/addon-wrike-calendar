@@ -29,11 +29,16 @@ CustomSelectOption = React.createFactory React.createClass
 CustomSelect = React.createFactory React.createClass
   componentDidMount: ->
     document.addEventListener 'keyup', @onKeyUp
-    document.addEventListener "click", @onClose
+    document.addEventListener "click", @onClickOutside
 
   componentWillUnmount: ->
     document.removeEventListener 'keyup', @onKeyUp
-    document.removeEventListener "click", @onClose
+    document.removeEventListener "click", @onClickOutside
+
+  onClickOutside: (event) ->
+    if event.target.dataset.reactid.indexOf @.getDOMNode().dataset.reactid
+      #target is not a child of the component
+      @onClose()
 
   onKeyUp: (event) ->
     if event.keyCode is 27
@@ -52,33 +57,6 @@ CustomSelect = React.createFactory React.createClass
 
   componentWillReceiveProps: (nextProps) ->
     @updateState nextProps
-
- # componentDidMount: function() {
- #    document.addEventListener("click", this.documentClickHandler);
- #  },
- #
- #  componentWillUnmount: function() {
- #    document.removeEventListener("click", this.documentClickHandler);
- #  },
- #
- #  documentClickHandler: function() {
- #    this.setState({
- #      isOpen: false
- #    });
- #  },
- #
- #  triggerClickHandler: function() {
- #    this.setState({
- #      isOpen: true
- #    });
- #  },
- #
- #  dropdownClickHandler: function(e) {
- #    e.nativeEvent.stopImmediatePropagation();
- #  },
-
-  onClickInside: (event) ->
-    event.nativeEvent.stopImmediatePropagation()
 
   onSelectOption: (selectedOption) ->
     @setState { value: selectedOption.value, mode: 'view' }

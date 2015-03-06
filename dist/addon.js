@@ -582,11 +582,16 @@ CustomSelectOption = React.createFactory(React.createClass({
 CustomSelect = React.createFactory(React.createClass({
   componentDidMount: function() {
     document.addEventListener('keyup', this.onKeyUp);
-    return document.addEventListener("click", this.onClose);
+    return document.addEventListener("click", this.onClickOutside);
   },
   componentWillUnmount: function() {
     document.removeEventListener('keyup', this.onKeyUp);
-    return document.removeEventListener("click", this.onClose);
+    return document.removeEventListener("click", this.onClickOutside);
+  },
+  onClickOutside: function(event) {
+    if (event.target.dataset.reactid.indexOf(this.getDOMNode().dataset.reactid)) {
+      return this.onClose();
+    }
   },
   onKeyUp: function(event) {
     if (event.keyCode === 27) {
@@ -609,9 +614,6 @@ CustomSelect = React.createFactory(React.createClass({
   },
   componentWillReceiveProps: function(nextProps) {
     return this.updateState(nextProps);
-  },
-  onClickInside: function(event) {
-    return event.nativeEvent.stopImmediatePropagation();
   },
   onSelectOption: function(selectedOption) {
     var base;
