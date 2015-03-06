@@ -30,10 +30,10 @@ class Reminder
   _loadReminderData: (callback) ->
     @_reminderData = null
 
-    app.api.userData.get "defaultSettings", (error, defaultSettingsData) =>
+    app.api.userData.get "defaultSettings", (error, defaultSettingsData = {}) =>
       @_defaultSettings = defaultSettingsData
 
-      app.api.userData.get @_task.data.id, (error, existingReminderData) =>
+      app.api.companyData.get @_task.data.id, (error, existingReminderData) =>
         eventId = existingReminderData?.eventId
         calendarId = existingReminderData?.calendarId
 
@@ -152,8 +152,8 @@ class Reminder
 
   _save: (newEvent, calendarId, callback) ->
     @_reminderData = {event: newEvent, calendarId}
-    @_defaultSettings = {calendarId, reminders: newEvent.reminders}
-    app.api.userData.set @_task.data.id, {eventId: newEvent.id, calendarId}, =>
+    @_defaultSettings = { calendarId }
+    app.api.companyData.set @_task.data.id, {eventId: newEvent.id, calendarId}, =>
       app.api.userData.set "defaultSettings", @_defaultSettings, -> callback()
 
 module.exports = Reminder

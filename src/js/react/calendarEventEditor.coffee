@@ -81,7 +81,7 @@ CalendarEventEditor = React.createFactory React.createClass
   render: ->
     div { className: 'increaseFontSize', style: paddingLeft: 28, marginBottom: 8 },
       if @state.mode is 'autorization'
-        div { className: 'taist-link', onClick: @onAutorize }, 'Authorize Google Calendar'
+        div { className: 'taist-link', onClick: @onAutorize }, 'Authorize calendar addon'
 
       if @state.mode is 'new'
         div { className: 'taist-link', onClick: @onEditEvent }, 'Create new event in the Google Calendar'

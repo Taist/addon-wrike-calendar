@@ -310,7 +310,7 @@ CalendarEventEditor = React.createFactory(React.createClass({
     }, this.state.mode === 'autorization' ? div({
       className: 'taist-link',
       onClick: this.onAutorize
-    }, 'Authorize Google Calendar') : void 0, this.state.mode === 'new' ? div({
+    }, 'Authorize calendar addon') : void 0, this.state.mode === 'new' ? div({
       className: 'taist-link',
       onClick: this.onEditEvent
     }, 'Create new event in the Google Calendar') : void 0, this.state.mode === 'view' || this.state.mode === 'edit' ? div({}, div({
@@ -951,8 +951,11 @@ Reminder = (function() {
     this._reminderData = null;
     return app.api.userData.get("defaultSettings", (function(_this) {
       return function(error, defaultSettingsData) {
+        if (defaultSettingsData == null) {
+          defaultSettingsData = {};
+        }
         _this._defaultSettings = defaultSettingsData;
-        return app.api.userData.get(_this._task.data.id, function(error, existingReminderData) {
+        return app.api.companyData.get(_this._task.data.id, function(error, existingReminderData) {
           var calendarId, eventId;
           eventId = existingReminderData != null ? existingReminderData.eventId : void 0;
           calendarId = existingReminderData != null ? existingReminderData.calendarId : void 0;
@@ -1116,10 +1119,9 @@ Reminder = (function() {
       calendarId: calendarId
     };
     this._defaultSettings = {
-      calendarId: calendarId,
-      reminders: newEvent.reminders
+      calendarId: calendarId
     };
-    return app.api.userData.set(this._task.data.id, {
+    return app.api.companyData.set(this._task.data.id, {
       eventId: newEvent.id,
       calendarId: calendarId
     }, (function(_this) {
