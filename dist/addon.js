@@ -187,11 +187,11 @@ module.exports = {
 };
 
 },{"./calendarUtils":2,"./react/calendarEventEditor":4,"./wrikeUtils":11,"react":185}],4:[function(require,module,exports){
-var Calendar, CalendarEventEditor, CalendarReminderEditor, CustomSelect, React, TimeDuration, TimeIntervalSelector, button, div, option, ref, select;
+var Calendar, CalendarEventEditor, CalendarReminderEditor, CustomSelect, React, TimeDuration, TimeIntervalSelector, button, div, ref, span;
 
 React = require('react');
 
-ref = React.DOM, div = ref.div, select = ref.select, option = ref.option, button = ref.button;
+ref = React.DOM, div = ref.div, span = ref.span, button = ref.button;
 
 Calendar = require('react-input-calendar');
 
@@ -300,12 +300,31 @@ CalendarEventEditor = React.createFactory(React.createClass({
       mode: 'edit'
     });
   },
+  getEventDescription: function() {
+    var dateOptions, endTime, startTime, timeOptions;
+    dateOptions = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    };
+    timeOptions = {
+      hour: 'numeric',
+      minute: '2-digit'
+    };
+    startTime = new Date(this.state.startDate);
+    startTime.setHours(0, this.state.startTime);
+    endTime = new Date(this.state.startDate);
+    endTime.setHours(0, this.state.endTime);
+    console.log(this.state.startDate, this.state.startTime, startTime);
+    return this.state.startDate.toLocaleString(navigator.language, dateOptions) + ' ' + startTime.toLocaleString(navigator.language, timeOptions) + ' - ' + endTime.toLocaleString(navigator.language, timeOptions);
+  },
   render: function() {
     return div({
-      className: 'increaseFontSize',
+      className: 'taist-font-size',
       style: {
         paddingLeft: 28,
-        marginBottom: 8
+        marginBottom: 12
       }
     }, this.state.mode === 'autorization' ? div({
       className: 'taist-link',
@@ -313,19 +332,10 @@ CalendarEventEditor = React.createFactory(React.createClass({
     }, 'Authorize calendar addon') : void 0, this.state.mode === 'new' ? div({
       className: 'taist-link',
       onClick: this.onEditEvent
-    }, 'Create new event in the Google Calendar') : void 0, this.state.mode === 'view' || this.state.mode === 'edit' ? div({}, div({
-      style: {
-        display: 'inline-block',
-        position: 'relative'
-      }
-    }, this.state.mode === 'view' ? div({
-      style: {
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        zIndex: 2048
-      }
-    }, '') : void 0, Calendar({
+    }, 'Create new event in the Google Calendar') : void 0, this.state.mode === 'view' ? div({
+      className: 'taist-link',
+      onClick: this.onEditEvent
+    }, this.getEventDescription()) : void 0, this.state.mode === 'edit' ? div({}, Calendar({
       format: 'MM/DD/YYYY',
       date: this.state.startDate,
       onChange: this.onChangeDate,
@@ -355,17 +365,7 @@ CalendarEventEditor = React.createFactory(React.createClass({
           value: c.summary
         };
       })
-    }))), div({
-      style: {
-        display: 'inline-block'
-      }
-    }, this.state.mode === 'view' ? div({
-      className: 'taist-link',
-      onClick: this.onEditEvent,
-      style: {
-        marginLeft: 12
-      }
-    }, 'Edit') : void 0, this.state.mode === 'edit' ? div({
+    })), div({
       style: {
         display: 'inline-block'
       }
@@ -387,13 +387,11 @@ CalendarEventEditor = React.createFactory(React.createClass({
       style: {
         marginLeft: 12
       }
-    }, 'Cancel')) : void 0)) : void 0, this.state.mode === 'edit' ? div({}, div({
+    }, 'Cancel'))) : void 0, this.state.mode === 'edit' ? div({
       style: {
-        display: 'inline-block',
-        verticalAlign: 'top',
-        paddingRight: 12
+        marginTop: 8
       }
-    }, 'Notifications'), div({
+    }, div({
       style: {
         display: 'inline-block'
       }
@@ -408,7 +406,10 @@ CalendarEventEditor = React.createFactory(React.createClass({
       };
     })(this))), div({}, div({
       onClick: this.onAddReminder,
-      className: 'taist-link'
+      className: 'taist-link',
+      style: {
+        marginTop: 4
+      }
     }, 'Add notification')))) : void 0);
   }
 }));

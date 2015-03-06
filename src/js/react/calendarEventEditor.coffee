@@ -1,6 +1,6 @@
 React = require 'react'
 
-{ div, select, option, button } = React.DOM
+{ div, span, button } = React.DOM
 
 Calendar = require 'react-input-calendar'
 
@@ -78,60 +78,67 @@ CalendarEventEditor = React.createFactory React.createClass
   onEditEvent: ->
     @setState mode: 'edit'
 
+  getEventDescription: ->
+    dateOptions =
+      weekday: 'long'
+      year: 'numeric'
+      month: 'long'
+      day: 'numeric'
+
+    timeOptions =
+      hour: 'numeric'
+      minute: '2-digit'
+
+    startTime = new Date @state.startDate
+    startTime.setHours 0, @state.startTime
+    endTime = new Date @state.startDate
+    endTime.setHours 0, @state.endTime
+    console.log @state.startDate, @state.startTime, startTime
+
+    @state.startDate.toLocaleString(navigator.language, dateOptions) + ' ' +
+    startTime.toLocaleString(navigator.language, timeOptions) + ' - ' +
+    endTime.toLocaleString(navigator.language, timeOptions)
+
   render: ->
-    div { className: 'increaseFontSize', style: paddingLeft: 28, marginBottom: 8 },
+    div { className: 'taist-font-size', style: paddingLeft: 28, marginBottom: 12 },
       if @state.mode is 'autorization'
         div { className: 'taist-link', onClick: @onAuthorize }, 'Authorize calendar addon'
 
       if @state.mode is 'new'
         div { className: 'taist-link', onClick: @onEditEvent }, 'Create new event in the Google Calendar'
 
-      if @state.mode is 'view' or @state.mode is 'edit'
-        div {},
-          div { style: display: 'inline-block', position: 'relative' },
-            if @state.mode is 'view'
-              div {
-                style:
-                  position: 'absolute'
-                  width: '100%'
-                  height: '100%'
-                  zIndex: 2048
-              }, ''
-
-            Calendar {
-              format: 'MM/DD/YYYY'
-              date: @state.startDate
-              onChange: @onChangeDate
-              closeOnSelect: true
-            }
-
-            div { style: display: 'inline-block' },
-              TimeIntervalSelector
-                startTime: @state.startTime
-                endTime: @state.endTime
-                onChange: @onChangeTimeInterval
-
-            div { style: marginLeft: 12, display: 'inline-block' },
-              CustomSelect {
-                selected: { id: @state.currentCalendar.id, value: @state.currentCalendar.summary }
-                onChange: @onChangeCalendar
-                options: @calendarsList.map (c) -> { id: c.id, value: c.summary }
-              }
-
-          div { style: display: 'inline-block' },
-            if @state.mode is 'view'
-              div { className: 'taist-link', onClick: @onEditEvent, style: marginLeft: 12 }, 'Edit'
-
-            if @state.mode is 'edit'
-              div { style: display: 'inline-block' },
-                div { className: 'taist-link', onClick: @onSave, style: marginLeft: 12 }, 'Save'
-                div { className: 'taist-link', onClick: @onDelete, style: marginLeft: 12 }, 'Delete'
-                div { className: 'taist-link', onClick: @onReset, style: marginLeft: 12 }, 'Cancel'
+      if @state.mode is 'view'
+        div { className: 'taist-link', onClick: @onEditEvent }, @getEventDescription()
 
       if @state.mode is 'edit'
         div {},
-          div { style: display: 'inline-block', verticalAlign: 'top', paddingRight: 12 },
-            'Notifications'
+          Calendar {
+            format: 'MM/DD/YYYY'
+            date: @state.startDate
+            onChange: @onChangeDate
+            closeOnSelect: true
+          }
+
+          div { style: display: 'inline-block' },
+            TimeIntervalSelector
+              startTime: @state.startTime
+              endTime: @state.endTime
+              onChange: @onChangeTimeInterval
+
+          div { style: marginLeft: 12, display: 'inline-block' },
+            CustomSelect {
+              selected: { id: @state.currentCalendar.id, value: @state.currentCalendar.summary }
+              onChange: @onChangeCalendar
+              options: @calendarsList.map (c) -> { id: c.id, value: c.summary }
+            }
+
+          div { style: display: 'inline-block' },
+            div { className: 'taist-link', onClick: @onSave, style: marginLeft: 12 }, 'Save'
+            div { className: 'taist-link', onClick: @onDelete, style: marginLeft: 12 }, 'Delete'
+            div { className: 'taist-link', onClick: @onReset, style: marginLeft: 12 }, 'Cancel'
+
+      if @state.mode is 'edit'
+        div { style: marginTop: 8 },
           div { style: display: 'inline-block' },
             div {},
               @state.reminders.map (reminder, index) =>
@@ -142,6 +149,7 @@ CalendarEventEditor = React.createFactory React.createClass
                   onDelete: @onDeleteReminder
                 }
             div {},
-              div { onClick: @onAddReminder, className: 'taist-link' }, 'Add notification'
+              div { onClick: @onAddReminder, className: 'taist-link', style: marginTop: 4 },
+                'Add notification'
 
 module.exports = CalendarEventEditor

@@ -196,12 +196,12 @@ div.taist-link:hover {
 	background-size: contain;
 }
 
-.increaseFontSize * {
-	font-size: 14px;
+.taist-font-size * {
+	font-size: 12px;
 }
 
-.increaseFontSize select {
-	font-size: 120%;
+.taist-font-size select {
+	font-size: 100%;
 }
 
 .input-calendar .fa-calendar {
