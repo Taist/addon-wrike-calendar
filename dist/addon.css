@@ -10,6 +10,10 @@ div.taist-link {
 div.taist-link:hover {
 }
 
+div.taist-link-background:hover {
+	background-color: #eaebec;
+}
+
 .taist-reminders-container {
 	font-size: 12px;
 }
@@ -19,6 +23,7 @@ div.taist-link:hover {
 	font-size: 12px;
 	padding: 1px 4px 1px 4px;
 	box-sizing: border-box;
+	cursor: pointer;
 }
 
 .taist-reminders-container select {

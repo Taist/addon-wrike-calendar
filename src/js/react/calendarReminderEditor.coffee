@@ -53,10 +53,10 @@ CalendarReminderEditor = React.createFactory React.createClass
         className: 'taist-link'
         style:
           position: 'relative'
-          top: 3
+          top: 1
           left: 3
-          width: 15
-          height: 15
+          width: 11
+          height: 11
           backgroundImage: "url(#{awesomeIcons.get 'remove'})"
           backgroundSize: 'contain'
       }

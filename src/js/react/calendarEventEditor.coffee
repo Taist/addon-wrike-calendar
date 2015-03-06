@@ -100,18 +100,30 @@ CalendarEventEditor = React.createFactory React.createClass
     endTime.toLocaleString(language, timeOptions).toLowerCase()
 
   render: ->
-    div { className: 'taist-reminders-container', style: paddingLeft: 28, marginBottom: 12 },
+    div { className: 'taist-reminders-container', style: marginBottom: 6 },
       if @state.mode is 'autorization'
-        div { className: 'taist-link', onClick: @onAuthorize }, 'Authorize calendar addon'
+        div {
+          onClick: @onAuthorize
+          className: 'taist-link taist-link-background'
+          style: padding: "6px 28px 6px 28px"
+        }, 'Authorize calendar addon'
 
       if @state.mode is 'new'
-        div { className: 'taist-link', onClick: @onEditEvent }, 'Create new event in the Google Calendar'
+        div {
+          onClick: @onEditEvent
+          className: 'taist-link taist-link-background'
+          style: padding: "6px 28px 6px 28px"
+        }, 'Add to calendar'
 
       if @state.mode is 'view'
-        div { className: 'taist-link', onClick: @onEditEvent }, @getEventDescription()
+        div {
+          onClick: @onEditEvent
+          className: 'taist-link taist-link-background',
+          style: padding: "6px 28px 6px 28px"
+        }, @getEventDescription()
 
       if @state.mode is 'edit'
-        div {},
+        div { style: marginLeft: 28 },
           Calendar {
             format: 'MM/DD/YYYY'
             date: @state.startDate
@@ -138,7 +150,7 @@ CalendarEventEditor = React.createFactory React.createClass
             div { className: 'taist-link', onClick: @onReset, style: marginLeft: 12 }, 'Cancel'
 
       if @state.mode is 'edit'
-        div { style: marginTop: 8 },
+        div { style: marginLeft: 28, marginBottom: 6, marginTop: 8 },
           div { style: display: 'inline-block' },
             div {},
               @state.reminders.map (reminder, index) =>

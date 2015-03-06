@@ -336,19 +336,31 @@ CalendarEventEditor = React.createFactory(React.createClass({
     return div({
       className: 'taist-reminders-container',
       style: {
-        paddingLeft: 28,
-        marginBottom: 12
+        marginBottom: 6
       }
     }, this.state.mode === 'autorization' ? div({
-      className: 'taist-link',
-      onClick: this.onAuthorize
+      onClick: this.onAuthorize,
+      className: 'taist-link taist-link-background',
+      style: {
+        padding: "6px 28px 6px 28px"
+      }
     }, 'Authorize calendar addon') : void 0, this.state.mode === 'new' ? div({
-      className: 'taist-link',
-      onClick: this.onEditEvent
-    }, 'Create new event in the Google Calendar') : void 0, this.state.mode === 'view' ? div({
-      className: 'taist-link',
-      onClick: this.onEditEvent
-    }, this.getEventDescription()) : void 0, this.state.mode === 'edit' ? div({}, Calendar({
+      onClick: this.onEditEvent,
+      className: 'taist-link taist-link-background',
+      style: {
+        padding: "6px 28px 6px 28px"
+      }
+    }, 'Add to calendar') : void 0, this.state.mode === 'view' ? div({
+      onClick: this.onEditEvent,
+      className: 'taist-link taist-link-background',
+      style: {
+        padding: "6px 28px 6px 28px"
+      }
+    }, this.getEventDescription()) : void 0, this.state.mode === 'edit' ? div({
+      style: {
+        marginLeft: 28
+      }
+    }, Calendar({
       format: 'MM/DD/YYYY',
       date: this.state.startDate,
       onChange: this.onChangeDate,
@@ -402,6 +414,8 @@ CalendarEventEditor = React.createFactory(React.createClass({
       }
     }, 'Cancel'))) : void 0, this.state.mode === 'edit' ? div({
       style: {
+        marginLeft: 28,
+        marginBottom: 6,
         marginTop: 8
       }
     }, div({
@@ -503,10 +517,10 @@ CalendarReminderEditor = React.createFactory(React.createClass({
       className: 'taist-link',
       style: {
         position: 'relative',
-        top: 3,
+        top: 1,
         left: 3,
-        width: 15,
-        height: 15,
+        width: 11,
+        height: 11,
         backgroundImage: "url(" + (awesomeIcons.get('remove')) + ")",
         backgroundSize: 'contain'
       }
