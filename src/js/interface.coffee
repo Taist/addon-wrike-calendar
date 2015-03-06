@@ -14,13 +14,13 @@ module.exports =
       reminder.delete ->
         render()
 
-    onAutorize = ->
+    onAuthorize = ->
       calendarUtils.authorize ->
         currentTask = wrikeUtils.currentTask()
         reminder.load ->
           render()
 
     render = ->
-      React.render ( CalendarEventEditor { reminder, onSave, onDelete, onAutorize } ), container
+      React.render ( CalendarEventEditor { reminder, onSave, onDelete, onAuthorize } ), container
 
     render()

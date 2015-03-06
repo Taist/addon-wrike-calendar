@@ -57,8 +57,8 @@ CalendarEventEditor = React.createFactory React.createClass
   onDelete: ->
     @props.onDelete?()
 
-  onAutorize: ->
-    @props.onAutorize?()
+  onAuthorize: ->
+    @props.onAuthorize?()
 
   onChangeReminder: (index, reminder) ->
     reminders = @state.reminders
@@ -81,7 +81,7 @@ CalendarEventEditor = React.createFactory React.createClass
   render: ->
     div { className: 'increaseFontSize', style: paddingLeft: 28, marginBottom: 8 },
       if @state.mode is 'autorization'
-        div { className: 'taist-link', onClick: @onAutorize }, 'Authorize calendar addon'
+        div { className: 'taist-link', onClick: @onAuthorize }, 'Authorize calendar addon'
 
       if @state.mode is 'new'
         div { className: 'taist-link', onClick: @onEditEvent }, 'Create new event in the Google Calendar'

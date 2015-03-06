@@ -156,7 +156,7 @@ calendarUtils = require('./calendarUtils');
 
 module.exports = {
   renderReminder: function(container, reminder) {
-    var onAutorize, onDelete, onSave, render;
+    var onAuthorize, onDelete, onSave, render;
     onSave = function(state) {
       return reminder.upsert(state);
     };
@@ -165,7 +165,7 @@ module.exports = {
         return render();
       });
     };
-    onAutorize = function() {
+    onAuthorize = function() {
       return calendarUtils.authorize(function() {
         var currentTask;
         currentTask = wrikeUtils.currentTask();
@@ -179,7 +179,7 @@ module.exports = {
         reminder: reminder,
         onSave: onSave,
         onDelete: onDelete,
-        onAutorize: onAutorize
+        onAuthorize: onAuthorize
       }), container);
     };
     return render();
@@ -264,9 +264,9 @@ CalendarEventEditor = React.createFactory(React.createClass({
     var base;
     return typeof (base = this.props).onDelete === "function" ? base.onDelete() : void 0;
   },
-  onAutorize: function() {
+  onAuthorize: function() {
     var base;
-    return typeof (base = this.props).onAutorize === "function" ? base.onAutorize() : void 0;
+    return typeof (base = this.props).onAuthorize === "function" ? base.onAuthorize() : void 0;
   },
   onChangeReminder: function(index, reminder) {
     var reminders;
@@ -309,7 +309,7 @@ CalendarEventEditor = React.createFactory(React.createClass({
       }
     }, this.state.mode === 'autorization' ? div({
       className: 'taist-link',
-      onClick: this.onAutorize
+      onClick: this.onAuthorize
     }, 'Authorize calendar addon') : void 0, this.state.mode === 'new' ? div({
       className: 'taist-link',
       onClick: this.onEditEvent
@@ -909,15 +909,15 @@ Reminder = (function() {
 
   Reminder.prototype._defaultSettings = null;
 
-  Reminder.prototype._isAutorizedOnGoogle = false;
+  Reminder.prototype._isAuthorizedOnGoogle = false;
 
   function Reminder(_task) {
     this._task = _task;
   }
 
   Reminder.prototype.load = function(callback) {
-    this._isAutorizedOnGoogle = calendarUtils.authorized();
-    if (!this._isAutorizedOnGoogle) {
+    this._isAuthorizedOnGoogle = calendarUtils.authorized();
+    if (!this._isAuthorizedOnGoogle) {
       return callback();
     } else {
       return Reminder._loadCalendars((function(_this) {
@@ -990,7 +990,7 @@ Reminder = (function() {
 
   Reminder.prototype.getDisplayData = function() {
     var currentSettings, displayData, endDate, endTime, i, len, notification, ref, ref1, ref2, ref3, ref4, reminderMethod, reminderMinutes, reminders, startDate, startTime, usedNotifications;
-    if (!this._isAutorizedOnGoogle) {
+    if (!this._isAuthorizedOnGoogle) {
       return null;
     }
     if (this.exists()) {

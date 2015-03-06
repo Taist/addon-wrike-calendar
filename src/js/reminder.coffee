@@ -6,12 +6,12 @@ class Reminder
   @_calendarsList: null
   _reminderData: null
   _defaultSettings: null
-  _isAutorizedOnGoogle: false
+  _isAuthorizedOnGoogle: false
 
   constructor: (@_task) ->
   load: (callback) ->
-    @_isAutorizedOnGoogle = calendarUtils.authorized()
-    unless @_isAutorizedOnGoogle
+    @_isAuthorizedOnGoogle = calendarUtils.authorized()
+    unless @_isAuthorizedOnGoogle
       callback()
     else
       Reminder._loadCalendars =>
@@ -53,7 +53,7 @@ class Reminder
   _getRawBaseValue: -> @_task.data["startDate"] ? @_task.data["finishDate"]
 
   getDisplayData: ->
-    unless @_isAutorizedOnGoogle
+    unless @_isAuthorizedOnGoogle
       return null
 
     if @exists()
