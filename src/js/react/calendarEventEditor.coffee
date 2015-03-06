@@ -32,7 +32,7 @@ CalendarEventEditor = React.createFactory React.createClass
       startTime: reminderData.startTime
       endTime: reminderData.endTime
       startDate: reminderData.startDate
-      reminders: reminderData.reminders
+      reminders: reminderData.reminders.slice 0
       mode: if reminderData.exists then 'view' else 'new'
 
   componentWillMount: () ->
@@ -93,7 +93,6 @@ CalendarEventEditor = React.createFactory React.createClass
     startTime.setHours 0, @state.startTime
     endTime = new Date @state.startDate
     endTime.setHours 0, @state.endTime
-    console.log @state.startDate, @state.startTime, startTime
 
     language = navigator.language
     @state.startDate.toLocaleString(language, dateOptions) + ' ' +

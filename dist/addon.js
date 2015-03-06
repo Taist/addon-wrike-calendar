@@ -243,7 +243,7 @@ CalendarEventEditor = React.createFactory(React.createClass({
       startTime: reminderData.startTime,
       endTime: reminderData.endTime,
       startDate: reminderData.startDate,
-      reminders: reminderData.reminders,
+      reminders: reminderData.reminders.slice(0),
       mode: reminderData.exists ? 'view' : 'new'
     });
   },
@@ -329,7 +329,6 @@ CalendarEventEditor = React.createFactory(React.createClass({
     startTime.setHours(0, this.state.startTime);
     endTime = new Date(this.state.startDate);
     endTime.setHours(0, this.state.endTime);
-    console.log(this.state.startDate, this.state.startTime, startTime);
     language = navigator.language;
     return this.state.startDate.toLocaleString(language, dateOptions) + ' ' + startTime.toLocaleString(language, timeOptions).toLowerCase() + ' - ' + endTime.toLocaleString(language, timeOptions).toLowerCase();
   },
