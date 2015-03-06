@@ -398,13 +398,15 @@ CalendarEventEditor = React.createFactory(React.createClass({
       className: 'taist-link',
       onClick: this.onSave,
       style: {
-        marginLeft: 12
+        marginLeft: 12,
+        color: 'rgb(82, 133, 184)'
       }
     }, 'Save'), div({
       className: 'taist-link',
       onClick: this.onDelete,
       style: {
-        marginLeft: 12
+        marginLeft: 12,
+        color: 'rgb(164, 13, 13)'
       }
     }, 'Delete'), div({
       className: 'taist-link',
@@ -455,7 +457,7 @@ ref = React.DOM, div = ref.div, select = ref.select, option = ref.option;
 TimeDuration = require('./timeDuration');
 
 CalendarReminderEditor = React.createFactory(React.createClass({
-  reminderMethods: ['popup', 'email', 'sms'],
+  reminderMethods: ['email', 'sms', 'popup'],
   updateState: function(newProps) {
     return this.setState(newProps.reminder);
   },
@@ -522,7 +524,8 @@ CalendarReminderEditor = React.createFactory(React.createClass({
         width: 11,
         height: 11,
         backgroundImage: "url(" + (awesomeIcons.get('remove')) + ")",
-        backgroundSize: 'contain'
+        backgroundSize: 'contain',
+        opacity: 0.6
       }
     }));
   }
@@ -741,11 +744,15 @@ TimeDuration = React.createFactory(React.createClass({
   onChangeNumber: function(event) {
     return this.onChange(event.target.value, this.state.quantity);
   },
+  onInputFocus: function(event) {
+    return event.target.select();
+  },
   render: function() {
     return div({}, input({
       value: this.state.number,
       type: 'text',
       onChange: this.onChangeNumber,
+      onFocus: this.onInputFocus,
       style: {
         textAlign: 'right',
         width: 40,

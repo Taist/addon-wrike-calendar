@@ -145,9 +145,21 @@ CalendarEventEditor = React.createFactory React.createClass
             }
 
           div { style: display: 'inline-block' },
-            div { className: 'taist-link', onClick: @onSave, style: marginLeft: 12 }, 'Save'
-            div { className: 'taist-link', onClick: @onDelete, style: marginLeft: 12 }, 'Delete'
-            div { className: 'taist-link', onClick: @onReset, style: marginLeft: 12 }, 'Cancel'
+            div {
+              className: 'taist-link'
+              onClick: @onSave
+              style: marginLeft: 12, color: 'rgb(82, 133, 184)'
+            }, 'Save'
+            div {
+              className: 'taist-link',
+              onClick: @onDelete,
+              style: marginLeft: 12, color: 'rgb(164, 13, 13)'
+            }, 'Delete'
+            div {
+              className: 'taist-link',
+              onClick: @onReset,
+              style: marginLeft: 12
+            }, 'Cancel'
 
       if @state.mode is 'edit'
         div { style: marginLeft: 28, marginBottom: 6, marginTop: 8 },

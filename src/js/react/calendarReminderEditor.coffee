@@ -6,7 +6,7 @@ awesomeIcons = require './awesomeIcons'
 TimeDuration = require './timeDuration'
 
 CalendarReminderEditor = React.createFactory React.createClass
-  reminderMethods: [ 'popup', 'email', 'sms' ]
+  reminderMethods: [ 'email', 'sms', 'popup' ]
 
   updateState: (newProps) ->
     @setState newProps.reminder
@@ -59,6 +59,7 @@ CalendarReminderEditor = React.createFactory React.createClass
           height: 11
           backgroundImage: "url(#{awesomeIcons.get 'remove'})"
           backgroundSize: 'contain'
+          opacity: 0.6
       }
 
 module.exports = CalendarReminderEditor

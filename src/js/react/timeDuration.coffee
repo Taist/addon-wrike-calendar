@@ -42,12 +42,16 @@ TimeDuration = React.createFactory React.createClass
   onChangeNumber: (event) ->
     @onChange event.target.value, @state.quantity
 
+  onInputFocus: (event) ->
+    event.target.select()
+
   render: ->
     div {},
       input {
         value: @state.number
         type: 'text'
         onChange: @onChangeNumber
+        onFocus: @onInputFocus
         style:
           textAlign: 'right'
           width: 40
