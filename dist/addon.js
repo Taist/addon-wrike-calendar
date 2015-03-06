@@ -446,15 +446,17 @@ CalendarEventEditor = React.createFactory(React.createClass({
 module.exports = CalendarEventEditor;
 
 },{"./calendarReminderEditor":6,"./customSelect":7,"./timeDuration":8,"./timeIntervalSelector":9,"react":186,"react-input-calendar":22}],6:[function(require,module,exports){
-var CalendarReminderEditor, React, TimeDuration, awesomeIcons, div, option, ref, select;
+var CalendarReminderEditor, CustomSelect, React, TimeDuration, awesomeIcons, div;
 
 React = require('react');
 
 awesomeIcons = require('./awesomeIcons');
 
-ref = React.DOM, div = ref.div, select = ref.select, option = ref.option;
+div = React.DOM.div;
 
 TimeDuration = require('./timeDuration');
+
+CustomSelect = require('./customSelect');
 
 CalendarReminderEditor = React.createFactory(React.createClass({
   reminderMethods: ['email', 'sms', 'popup'],
@@ -467,9 +469,9 @@ CalendarReminderEditor = React.createFactory(React.createClass({
   componentWillReceiveProps: function(nextProps) {
     return this.updateState(nextProps);
   },
-  onChangeMethod: function(event) {
+  onChangeMethod: function(selectedOption) {
     return this.setState({
-      method: event.target.value
+      method: selectedOption.value
     }, (function(_this) {
       return function() {
         var base;
@@ -496,20 +498,23 @@ CalendarReminderEditor = React.createFactory(React.createClass({
       style: {
         marginTop: 4
       }
-    }, select({
-      value: this.state.method,
+    }, CustomSelect({
+      selected: {
+        id: this.state.method,
+        value: this.state.method
+      },
       onChange: this.onChangeMethod,
+      options: this.reminderMethods.map(function(method) {
+        return {
+          id: method,
+          value: method
+        };
+      }),
+      width: 80
+    }), div({
       style: {
-        marginRight: 12
-      }
-    }, this.reminderMethods.map(function(m) {
-      return option({
-        key: m,
-        value: m
-      }, m);
-    })), div({
-      style: {
-        display: 'inline-block'
+        display: 'inline-block',
+        marginLeft: 12
       }
     }, TimeDuration({
       minutes: this.state.minutes,
@@ -533,7 +538,7 @@ CalendarReminderEditor = React.createFactory(React.createClass({
 
 module.exports = CalendarReminderEditor;
 
-},{"./awesomeIcons":4,"./timeDuration":8,"react":186}],7:[function(require,module,exports){
+},{"./awesomeIcons":4,"./customSelect":7,"./timeDuration":8,"react":186}],7:[function(require,module,exports){
 var CustomSelect, CustomSelectOption, React, div, input, ref;
 
 React = require('react');
@@ -548,7 +553,6 @@ CustomSelectOption = React.createFactory(React.createClass({
   },
   onClick: function() {
     var base;
-    console.log('onClickOption');
     return typeof (base = this.props).onSelect === "function" ? base.onSelect(this.props) : void 0;
   },
   onMouseEnter: function() {
@@ -677,11 +681,13 @@ CustomSelect = React.createFactory(React.createClass({
 module.exports = CustomSelect;
 
 },{"react":186}],8:[function(require,module,exports){
-var React, TimeDuration, div, input, option, ref, select;
+var CustomSelect, React, TimeDuration, div, input, option, ref, select;
 
 React = require('react');
 
 ref = React.DOM, div = ref.div, input = ref.input, select = ref.select, option = ref.option;
+
+CustomSelect = require('./customSelect');
 
 TimeDuration = React.createFactory(React.createClass({
   quantities: [
@@ -716,7 +722,7 @@ TimeDuration = React.createFactory(React.createClass({
         quantity = ref1[i];
         if (!(props.minutes % quantity.size)) {
           result = {
-            quantity: quantity.size,
+            quantity: quantity,
             number: props.minutes / quantity.size
           };
         }
@@ -732,14 +738,16 @@ TimeDuration = React.createFactory(React.createClass({
   },
   onChange: function(number, quantity) {
     var base, minutes;
-    minutes = number * quantity;
+    minutes = number * quantity.size;
     this.updateState({
       minutes: minutes
     });
     return typeof (base = this.props).onChange === "function" ? base.onChange(minutes) : void 0;
   },
-  onChangeQuantity: function(event) {
-    return this.onChange(this.state.number, event.target.value);
+  onChangeQuantity: function(selectedOption) {
+    return this.onChange(this.state.number, {
+      size: selectedOption.id
+    });
   },
   onChangeNumber: function(event) {
     return this.onChange(event.target.value, this.state.quantity);
@@ -756,23 +764,28 @@ TimeDuration = React.createFactory(React.createClass({
       style: {
         textAlign: 'right',
         width: 40,
-        marginRight: 8
+        marginRight: 4
       }
-    }), select({
-      value: this.state.quantity,
-      onChange: this.onChangeQuantity
-    }, this.quantities.map(function(q) {
-      return option({
-        key: q.name,
-        value: q.size
-      }, q.name);
-    })));
+    }), CustomSelect({
+      selected: {
+        id: this.state.quantity.size,
+        value: this.state.quantity.name
+      },
+      onChange: this.onChangeQuantity,
+      options: this.quantities.map(function(q) {
+        return {
+          id: q.size,
+          value: q.name
+        };
+      }),
+      width: 80
+    }));
   }
 }));
 
 module.exports = TimeDuration;
 
-},{"react":186}],9:[function(require,module,exports){
+},{"./customSelect":7,"react":186}],9:[function(require,module,exports){
 var React, TimeIntervalSelector, TimeSelector, div;
 
 React = require('react');

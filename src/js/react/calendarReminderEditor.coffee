@@ -1,9 +1,10 @@
 React = require 'react'
 awesomeIcons = require './awesomeIcons'
 
-{ div, select, option } = React.DOM
+{ div } = React.DOM
 
 TimeDuration = require './timeDuration'
+CustomSelect = require './customSelect'
 
 CalendarReminderEditor = React.createFactory React.createClass
   reminderMethods: [ 'email', 'sms', 'popup' ]
@@ -17,8 +18,8 @@ CalendarReminderEditor = React.createFactory React.createClass
   componentWillReceiveProps: (nextProps) ->
     @updateState nextProps
 
-  onChangeMethod: (event) ->
-    @setState method: event.target.value, =>
+  onChangeMethod: (selectedOption) ->
+    @setState method: selectedOption.value, =>
       @props.onChange?(@props.index, @state)
 
   onChangeReminderTime: (minutes) ->
@@ -30,18 +31,17 @@ CalendarReminderEditor = React.createFactory React.createClass
 
   render: ->
     div { style: marginTop: 4 },
-      select {
-        value: @state.method
+      CustomSelect {
+        selected: { id: @state.method, value: @state.method }
         onChange: @onChangeMethod
-        style:
-          marginRight: 12
-      },
-        @reminderMethods.map (m) ->
-          option { key: m, value: m }, m
+        options: @reminderMethods.map (method) -> { id: method, value: method }
+        width: 80
+      }
 
       div {
         style:
           display: 'inline-block'
+          marginLeft: 12
       },
         TimeDuration {
           minutes: @state.minutes

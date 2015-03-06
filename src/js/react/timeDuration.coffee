@@ -2,6 +2,8 @@ React = require 'react'
 
 { div, input, select, option } = React.DOM
 
+CustomSelect = require './customSelect'
+
 TimeDuration = React.createFactory React.createClass
   quantities: [
     { name: 'minutes', size: 1 }
@@ -20,7 +22,7 @@ TimeDuration = React.createFactory React.createClass
       for quantity in @quantities
         unless props.minutes % quantity.size
           result = {
-            quantity: quantity.size
+            quantity: quantity
             number: props.minutes / quantity.size
           }
       @setState result
@@ -32,12 +34,12 @@ TimeDuration = React.createFactory React.createClass
     @updateState nextProps
 
   onChange: (number, quantity) ->
-    minutes = number * quantity
+    minutes = number * quantity.size
     @updateState { minutes }
     @props.onChange?(minutes)
 
-  onChangeQuantity: (event) ->
-    @onChange @state.number, event.target.value
+  onChangeQuantity: (selectedOption) ->
+    @onChange @state.number, size: selectedOption.id
 
   onChangeNumber: (event) ->
     @onChange event.target.value, @state.quantity
@@ -55,11 +57,14 @@ TimeDuration = React.createFactory React.createClass
         style:
           textAlign: 'right'
           width: 40
-          marginRight: 8
+          marginRight: 4
       }
 
-      select { value: @state.quantity, onChange: @onChangeQuantity },
-        @quantities.map (q) ->
-          option { key: q.name, value: q.size }, q.name
+      CustomSelect {
+        selected: { id: @state.quantity.size, value: @state.quantity.name }
+        onChange: @onChangeQuantity
+        options: @quantities.map (q) -> { id: q.size, value: q.name }
+        width: 80
+      }
 
 module.exports = TimeDuration

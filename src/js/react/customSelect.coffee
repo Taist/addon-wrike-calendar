@@ -7,7 +7,6 @@ CustomSelectOption = React.createFactory React.createClass
     backgroundColor: ''
 
   onClick: ->
-    console.log 'onClickOption'
     @props.onSelect?(@props)
 
   onMouseEnter: ->
