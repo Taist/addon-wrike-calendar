@@ -12,7 +12,9 @@ CalendarReminderEditor = require './calendarReminderEditor'
 CalendarEventEditor = React.createFactory React.createClass
   calendarsList: []
 
-  onChangeDate: (startDate) ->
+  onChangeDate: (monthDateYear) ->
+    dateParts = monthDateYear.split /\D/
+    startDate = new Date dateParts[2], dateParts[0] - 1, dateParts[1], 12
     @setState { startDate }
 
   getCalendarById: (calendarId) ->
@@ -67,7 +69,7 @@ CalendarEventEditor = React.createFactory React.createClass
 
   onAddReminder: ->
     reminders = @state.reminders
-    reminders.push { method: 'popup', minutes: '10' }
+    reminders.push { method: 'sms', minutes: '10' }
     @setState { reminders }
 
   onDeleteReminder: (index) ->
