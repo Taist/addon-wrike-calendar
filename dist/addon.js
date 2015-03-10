@@ -247,7 +247,8 @@ CalendarEventEditor = React.createFactory(React.createClass({
       endTime: reminderData.endTime,
       startDate: reminderData.startDate,
       reminders: reminderData.reminders.slice(0),
-      mode: reminderData.exists ? 'view' : 'new'
+      mode: reminderData.exists ? 'view' : 'new',
+      isNewEvent: false
     });
   },
   componentWillMount: function() {
@@ -278,6 +279,7 @@ CalendarEventEditor = React.createFactory(React.createClass({
   },
   onDelete: function() {
     var base;
+    console.log(this);
     return typeof (base = this.props).onDelete === "function" ? base.onDelete() : void 0;
   },
   onAuthorize: function() {
@@ -316,6 +318,12 @@ CalendarEventEditor = React.createFactory(React.createClass({
       mode: 'edit'
     });
   },
+  onNewEvent: function() {
+    return this.setState({
+      mode: 'edit',
+      isNewEvent: true
+    });
+  },
   getEventDescription: function() {
     var dateOptions, endTime, language, startTime, timeOptions;
     dateOptions = {
@@ -345,23 +353,23 @@ CalendarEventEditor = React.createFactory(React.createClass({
       onClick: this.onAuthorize,
       className: 'taist-link taist-link-background',
       style: {
-        padding: "6px 28px 6px 28px"
+        padding: "6px 26px 6px 26px"
       }
     }, 'Authorize calendar addon') : void 0, this.state.mode === 'new' ? div({
-      onClick: this.onEditEvent,
-      className: 'taist-link taist-link-background',
+      onClick: this.onNewEvent,
+      className: 'wspace-button-add x-btn-noicon',
       style: {
-        padding: "6px 28px 6px 28px"
+        margin: "6px 26px 6px 26px"
       }
     }, 'Add to calendar') : void 0, this.state.mode === 'view' ? div({
       onClick: this.onEditEvent,
       className: 'taist-link taist-link-background',
       style: {
-        padding: "6px 28px 6px 28px"
+        padding: "6px 26px 6px 26px"
       }
     }, this.getEventDescription()) : void 0, this.state.mode === 'edit' ? div({
       style: {
-        marginLeft: 28
+        marginLeft: 26
       }
     }, Calendar({
       format: 'MM/DD/YYYY',
@@ -379,6 +387,11 @@ CalendarEventEditor = React.createFactory(React.createClass({
     })), div({
       style: {
         marginLeft: 12,
+        display: 'inline-block'
+      }
+    }, 'in'), div({
+      style: {
+        marginLeft: 4,
         display: 'inline-block'
       }
     }, CustomSelect({
@@ -404,14 +417,14 @@ CalendarEventEditor = React.createFactory(React.createClass({
         marginLeft: 12,
         color: 'rgb(82, 133, 184)'
       }
-    }, 'Save'), div({
+    }, 'Save'), !this.state.isNewEvent ? div({
       className: 'taist-link',
       onClick: this.onDelete,
       style: {
         marginLeft: 12,
         color: 'rgb(164, 13, 13)'
       }
-    }, 'Delete'), div({
+    }, 'Delete') : void 0, div({
       className: 'taist-link',
       onClick: this.onReset,
       style: {
@@ -419,7 +432,7 @@ CalendarEventEditor = React.createFactory(React.createClass({
       }
     }, 'Cancel'))) : void 0, this.state.mode === 'edit' ? div({
       style: {
-        marginLeft: 28,
+        marginLeft: 26,
         marginBottom: 6,
         marginTop: 8
       }
@@ -436,12 +449,13 @@ CalendarEventEditor = React.createFactory(React.createClass({
           onDelete: _this.onDeleteReminder
         });
       };
-    })(this))), div({}, div({
-      onClick: this.onAddReminder,
-      className: 'taist-link',
+    })(this))), div({
       style: {
-        marginTop: 8
+        marginTop: 12
       }
+    }, div({
+      onClick: this.onAddReminder,
+      className: 'wspace-button-add x-btn-noicon'
     }, 'Add notification')))) : void 0);
   }
 }));

@@ -36,6 +36,7 @@ CalendarEventEditor = React.createFactory React.createClass
       startDate: reminderData.startDate
       reminders: reminderData.reminders.slice 0
       mode: if reminderData.exists then 'view' else 'new'
+      isNewEvent: false
 
   componentWillMount: () ->
     @updateState @props
@@ -57,6 +58,7 @@ CalendarEventEditor = React.createFactory React.createClass
     @setState mode: 'view'
 
   onDelete: ->
+    console.log @
     @props.onDelete?()
 
   onAuthorize: ->
@@ -79,6 +81,9 @@ CalendarEventEditor = React.createFactory React.createClass
 
   onEditEvent: ->
     @setState mode: 'edit'
+
+  onNewEvent: ->
+    @setState mode: 'edit', isNewEvent: true
 
   getEventDescription: ->
     dateOptions =
@@ -107,25 +112,25 @@ CalendarEventEditor = React.createFactory React.createClass
         div {
           onClick: @onAuthorize
           className: 'taist-link taist-link-background'
-          style: padding: "6px 28px 6px 28px"
+          style: padding: "6px 26px 6px 26px"
         }, 'Authorize calendar addon'
 
       if @state.mode is 'new'
         div {
-          onClick: @onEditEvent
-          className: 'taist-link taist-link-background'
-          style: padding: "6px 28px 6px 28px"
+          onClick: @onNewEvent
+          className: 'wspace-button-add x-btn-noicon'
+          style: margin: "6px 26px 6px 26px"
         }, 'Add to calendar'
 
       if @state.mode is 'view'
         div {
           onClick: @onEditEvent
           className: 'taist-link taist-link-background',
-          style: padding: "6px 28px 6px 28px"
+          style: padding: "6px 26px 6px 26px"
         }, @getEventDescription()
 
       if @state.mode is 'edit'
-        div { style: marginLeft: 28 },
+        div { style: marginLeft: 26 },
           Calendar {
             format: 'MM/DD/YYYY'
             date: @state.startDate
@@ -139,7 +144,9 @@ CalendarEventEditor = React.createFactory React.createClass
               endTime: @state.endTime
               onChange: @onChangeTimeInterval
 
-          div { style: marginLeft: 12, display: 'inline-block' },
+          div { style: marginLeft: 12, display: 'inline-block' }, 'in'
+
+          div { style: marginLeft: 4, display: 'inline-block' },
             CustomSelect {
               selected: { id: @state.currentCalendar.id, value: @state.currentCalendar.summary }
               onChange: @onChangeCalendar
@@ -152,11 +159,12 @@ CalendarEventEditor = React.createFactory React.createClass
               onClick: @onSave
               style: marginLeft: 12, color: 'rgb(82, 133, 184)'
             }, 'Save'
-            div {
-              className: 'taist-link',
-              onClick: @onDelete,
-              style: marginLeft: 12, color: 'rgb(164, 13, 13)'
-            }, 'Delete'
+            unless @state.isNewEvent
+              div {
+                className: 'taist-link',
+                onClick: @onDelete,
+                style: marginLeft: 12, color: 'rgb(164, 13, 13)'
+              }, 'Delete'
             div {
               className: 'taist-link',
               onClick: @onReset,
@@ -164,7 +172,7 @@ CalendarEventEditor = React.createFactory React.createClass
             }, 'Cancel'
 
       if @state.mode is 'edit'
-        div { style: marginLeft: 28, marginBottom: 6, marginTop: 8 },
+        div { style: marginLeft: 26, marginBottom: 6, marginTop: 8 },
           div { style: display: 'inline-block' },
             div {},
               @state.reminders.map (reminder, index) =>
@@ -174,8 +182,8 @@ CalendarEventEditor = React.createFactory React.createClass
                   onChange: @onChangeReminder
                   onDelete: @onDeleteReminder
                 }
-            div {},
-              div { onClick: @onAddReminder, className: 'taist-link', style: marginTop: 8 },
+            div { style: marginTop: 12 },
+              div { onClick: @onAddReminder, className: 'wspace-button-add x-btn-noicon' },
                 'Add notification'
 
 module.exports = CalendarEventEditor
