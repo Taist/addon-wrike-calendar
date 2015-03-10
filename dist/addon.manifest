@@ -1,5 +1,5 @@
 {
-  "id": "reminders",
+  "id": "wrike-calendar",
   "title": "[Under construction] Reminders",
   "shortDescription": "[Addon is being updated to fit radical changes of Wrike frontend]\n\nAllows to set reminders for planned tasks - by Email or SMS via Google Calendar",
   "siteName": "Wrike",
