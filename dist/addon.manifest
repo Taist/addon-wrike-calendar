@@ -6,6 +6,7 @@
   "siteRegexp": "wrike.com",
   "js": "addon.js",
   "css": "addon.css",
+  "description": "./addon-description.md",
   "pages": [{
     "path": "^/workspace",
     "entryPoint": "common"
