@@ -1,7 +1,7 @@
 {
   "id": "wrike-calendar",
-  "title": "[Under construction] Reminders",
-  "shortDescription": "[Addon is being updated to fit radical changes of Wrike frontend]\n\nAllows to set reminders for planned tasks - by Email or SMS via Google Calendar",
+  "title": "Calendar",
+  "shortDescription": "Allows to schedule specific time slots and reminders for tasks via integration with Google Calendar",
   "siteName": "Wrike",
   "siteRegexp": "wrike.com",
   "js": "addon.js",

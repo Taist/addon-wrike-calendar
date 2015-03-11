@@ -131,7 +131,7 @@ class Reminder
   _updateEvent: (eventStartDate, eventEndDate, newCalendarId, reminders, callback) ->
     eventData = @_reminderData?.event ? {}
 
-    eventData.summary = @_task.data["title"]
+    eventData.summary = "[Wrike] " + @_task.data["title"]
     eventData.start = {dateTime: eventStartDate} if eventStartDate
     eventData.end = {dateTime: eventEndDate} if eventEndDate
     eventData.description = "Task link: https://www.wrike.com/open.htm?id=#{@_task.data.id}"

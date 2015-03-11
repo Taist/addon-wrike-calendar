@@ -1158,7 +1158,7 @@ Reminder = (function() {
   Reminder.prototype._updateEvent = function(eventStartDate, eventEndDate, newCalendarId, reminders, callback) {
     var eventData, newCallback, ref, ref1;
     eventData = (ref = (ref1 = this._reminderData) != null ? ref1.event : void 0) != null ? ref : {};
-    eventData.summary = this._task.data["title"];
+    eventData.summary = "[Wrike] " + this._task.data["title"];
     if (eventStartDate) {
       eventData.start = {
         dateTime: eventStartDate
