@@ -1,6 +1,6 @@
 React = require 'react'
 
-{ div, span, button } = React.DOM
+{ div, span, a, button } = React.DOM
 
 Calendar = require 'react-input-calendar'
 
@@ -34,6 +34,7 @@ CalendarEventEditor = React.createFactory React.createClass
       startTime: reminderData.startTime
       endTime: reminderData.endTime
       startDate: reminderData.startDate
+      htmlLink: reminderData.htmlLink
       reminders: reminderData.reminders.slice 0
       mode: if reminderData.exists then 'view' else 'new'
       isNewEvent: false
@@ -58,7 +59,6 @@ CalendarEventEditor = React.createFactory React.createClass
     @setState mode: 'view'
 
   onDelete: ->
-    console.log @
     @props.onDelete?()
 
   onAuthorize: ->
@@ -79,8 +79,9 @@ CalendarEventEditor = React.createFactory React.createClass
     reminders.splice index, 1
     @setState { reminders }
 
-  onEditEvent: ->
-    @setState mode: 'edit'
+  onEditEvent: (event) ->
+    if event.target.tagName.toLowerCase() isnt 'a'
+      @setState mode: 'edit'
 
   onNewEvent: ->
     @setState mode: 'edit', isNewEvent: true
@@ -102,9 +103,23 @@ CalendarEventEditor = React.createFactory React.createClass
     endTime.setHours 0, @state.endTime
 
     language = navigator.language
+
+    eventDescription =
     @state.startDate.toLocaleString(language, dateOptions) + ' ' +
     startTime.toLocaleString(language, timeOptions).toLowerCase() + ' - ' +
     endTime.toLocaleString(language, timeOptions).toLowerCase()
+
+    span {},
+      span {}, eventDescription
+      span {},
+        span {}, ' ('
+        a {
+          target: 'blank'
+          href: @state.htmlLink.replace(/\/event\?/, '/render?') + '#main_7'
+        },
+          @state.currentCalendar.summary
+        span {}, ')'
+
 
   render: ->
     div { className: 'taist-reminders-container', style: marginBottom: 6 },

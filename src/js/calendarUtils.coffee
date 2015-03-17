@@ -51,7 +51,6 @@ calendarUtils =
 
     request
     .then (response) =>
-      console.log 'loadCalendars', response.result.items
       callback response.result.items
 
   getEvent: (eventId, calendarId, callback) -> @_accessEvent "get", {calendarId, eventId}, callback

@@ -36,7 +36,7 @@ CustomSelect = React.createFactory React.createClass
     document.removeEventListener "click", @onClickOutside
 
   onClickOutside: (event) ->
-    if event.target.dataset.reactid.indexOf @.getDOMNode().dataset.reactid
+    if event.target.dataset.reactid?.indexOf @.getDOMNode().dataset.reactid
       #target is not a child of the component
       @onClose()
 

@@ -63,6 +63,8 @@ class Reminder
       endDate = new Date @_reminderData.event.end.dateTime
       endTime = endDate.getHours() * 60 + endDate.getMinutes()
 
+      htmlLink = @_reminderData.event.htmlLink
+
     else
       startDate = new Date
       startTime = endTime = 8 * 60
@@ -91,6 +93,7 @@ class Reminder
       endTime,
       reminderMethod,
       reminderMinutes,
+      htmlLink,
 
       reminders,
       exists: @exists()

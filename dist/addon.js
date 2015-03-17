@@ -83,7 +83,6 @@ calendarUtils = {
     });
     return request.then((function(_this) {
       return function(response) {
-        console.log('loadCalendars', response.result.items);
         return callback(response.result.items);
       };
     })(this));
@@ -200,11 +199,11 @@ module.exports = {
 };
 
 },{}],5:[function(require,module,exports){
-var Calendar, CalendarEventEditor, CalendarReminderEditor, CustomSelect, React, TimeDuration, TimeIntervalSelector, button, div, ref, span;
+var Calendar, CalendarEventEditor, CalendarReminderEditor, CustomSelect, React, TimeDuration, TimeIntervalSelector, a, button, div, ref, span;
 
 React = require('react');
 
-ref = React.DOM, div = ref.div, span = ref.span, button = ref.button;
+ref = React.DOM, div = ref.div, span = ref.span, a = ref.a, button = ref.button;
 
 Calendar = require('react-input-calendar');
 
@@ -246,6 +245,7 @@ CalendarEventEditor = React.createFactory(React.createClass({
       startTime: reminderData.startTime,
       endTime: reminderData.endTime,
       startDate: reminderData.startDate,
+      htmlLink: reminderData.htmlLink,
       reminders: reminderData.reminders.slice(0),
       mode: reminderData.exists ? 'view' : 'new',
       isNewEvent: false
@@ -279,7 +279,6 @@ CalendarEventEditor = React.createFactory(React.createClass({
   },
   onDelete: function() {
     var base;
-    console.log(this);
     return typeof (base = this.props).onDelete === "function" ? base.onDelete() : void 0;
   },
   onAuthorize: function() {
@@ -313,10 +312,12 @@ CalendarEventEditor = React.createFactory(React.createClass({
       reminders: reminders
     });
   },
-  onEditEvent: function() {
-    return this.setState({
-      mode: 'edit'
-    });
+  onEditEvent: function(event) {
+    if (event.target.tagName.toLowerCase() !== 'a') {
+      return this.setState({
+        mode: 'edit'
+      });
+    }
   },
   onNewEvent: function() {
     return this.setState({
@@ -325,7 +326,7 @@ CalendarEventEditor = React.createFactory(React.createClass({
     });
   },
   getEventDescription: function() {
-    var dateOptions, endTime, language, startTime, timeOptions;
+    var dateOptions, endTime, eventDescription, language, startTime, timeOptions;
     dateOptions = {
       weekday: 'short',
       year: this.state.startDate.getYear() !== new Date().getYear() ? 'numeric' : void 0,
@@ -341,7 +342,11 @@ CalendarEventEditor = React.createFactory(React.createClass({
     endTime = new Date(this.state.startDate);
     endTime.setHours(0, this.state.endTime);
     language = navigator.language;
-    return this.state.startDate.toLocaleString(language, dateOptions) + ' ' + startTime.toLocaleString(language, timeOptions).toLowerCase() + ' - ' + endTime.toLocaleString(language, timeOptions).toLowerCase();
+    eventDescription = this.state.startDate.toLocaleString(language, dateOptions) + ' ' + startTime.toLocaleString(language, timeOptions).toLowerCase() + ' - ' + endTime.toLocaleString(language, timeOptions).toLowerCase();
+    return span({}, span({}, eventDescription), span({}, span({}, ' ('), a({
+      target: 'blank',
+      href: this.state.htmlLink.replace(/\/event\?/, '/render?') + '#main_7'
+    }, this.state.currentCalendar.summary), span({}, ')')));
   },
   render: function() {
     return div({
@@ -606,7 +611,8 @@ CustomSelect = React.createFactory(React.createClass({
     return document.removeEventListener("click", this.onClickOutside);
   },
   onClickOutside: function(event) {
-    if (event.target.dataset.reactid.indexOf(this.getDOMNode().dataset.reactid)) {
+    var ref1;
+    if ((ref1 = event.target.dataset.reactid) != null ? ref1.indexOf(this.getDOMNode().dataset.reactid) : void 0) {
       return this.onClose();
     }
   },
@@ -1070,7 +1076,7 @@ Reminder = (function() {
   };
 
   Reminder.prototype.getDisplayData = function() {
-    var currentSettings, displayData, endDate, endTime, i, len, notification, ref, ref1, ref2, ref3, ref4, reminderMethod, reminderMinutes, reminders, startDate, startTime, usedNotifications;
+    var currentSettings, displayData, endDate, endTime, htmlLink, i, len, notification, ref, ref1, ref2, ref3, ref4, reminderMethod, reminderMinutes, reminders, startDate, startTime, usedNotifications;
     if (!this._isAuthorizedOnGoogle) {
       return null;
     }
@@ -1079,6 +1085,7 @@ Reminder = (function() {
       startTime = startDate.getHours() * 60 + startDate.getMinutes();
       endDate = new Date(this._reminderData.event.end.dateTime);
       endTime = endDate.getHours() * 60 + endDate.getMinutes();
+      htmlLink = this._reminderData.event.htmlLink;
     } else {
       startDate = new Date;
       startTime = endTime = 8 * 60;
@@ -1105,6 +1112,7 @@ Reminder = (function() {
       endTime: endTime,
       reminderMethod: reminderMethod,
       reminderMinutes: reminderMinutes,
+      htmlLink: htmlLink,
       reminders: reminders,
       exists: this.exists()
     };
