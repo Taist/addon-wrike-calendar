@@ -157,7 +157,9 @@ module.exports = {
   renderReminder: function(container, reminder) {
     var onAuthorize, onDelete, onSave, render;
     onSave = function(state) {
-      return reminder.upsert(state);
+      return reminder.upsert(state, function() {
+        return render();
+      });
     };
     onDelete = function() {
       return reminder["delete"](function() {
@@ -1136,12 +1138,13 @@ Reminder = (function() {
     return date;
   };
 
-  Reminder.prototype.upsert = function(data) {
+  Reminder.prototype.upsert = function(data, callback) {
     var eventEndDate, eventStartDate;
     eventStartDate = this._updateDateTime(new Date(data.startDate), data.startTime);
     eventEndDate = this._updateDateTime(new Date(data.startDate), data.endTime);
     return this._updateEvent(eventStartDate, eventEndDate, data.currentCalendar.id, data.reminders, function() {
-      return console.log('reminder updated');
+      console.log('reminder updated');
+      return callback();
     });
   };
 

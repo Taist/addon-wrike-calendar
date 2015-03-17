@@ -112,11 +112,12 @@ class Reminder
     date.setMinutes time % 60
     return date
 
-  upsert: (data) ->
+  upsert: (data, callback) ->
     eventStartDate = @_updateDateTime new Date(data.startDate), data.startTime
     eventEndDate = @_updateDateTime new Date(data.startDate), data.endTime
     @_updateEvent eventStartDate, eventEndDate, data.currentCalendar.id, data.reminders, ->
       console.log 'reminder updated'
+      callback()
 
   set: (hours, minutes, calendarId, useSms, useEmail, callback) ->
     eventStartDate = @_getBaseDateTime()

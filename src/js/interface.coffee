@@ -8,7 +8,8 @@ module.exports =
   renderReminder: (container, reminder) ->
 
     onSave = (state) ->
-      reminder.upsert state
+      reminder.upsert state, ->
+        render()
 
     onDelete = ->
       reminder.delete ->
