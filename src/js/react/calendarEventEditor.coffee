@@ -34,7 +34,7 @@ CalendarEventEditor = React.createFactory React.createClass
       startTime: reminderData.startTime
       endTime: reminderData.endTime
       startDate: reminderData.startDate
-      htmlLink: reminderData.htmlLink
+      htmlLink: reminderData.htmlLink or ''
       reminders: reminderData.reminders.slice 0
       mode: if reminderData.exists then 'view' else 'new'
       isNewEvent: false

@@ -245,7 +245,7 @@ CalendarEventEditor = React.createFactory(React.createClass({
       startTime: reminderData.startTime,
       endTime: reminderData.endTime,
       startDate: reminderData.startDate,
-      htmlLink: reminderData.htmlLink,
+      htmlLink: reminderData.htmlLink || '',
       reminders: reminderData.reminders.slice(0),
       mode: reminderData.exists ? 'view' : 'new',
       isNewEvent: false
