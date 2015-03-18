@@ -138,7 +138,7 @@ class Reminder
     eventData.summary = "[Wrike] " + @_task.data["title"]
     eventData.start = {dateTime: eventStartDate} if eventStartDate
     eventData.end = {dateTime: eventEndDate} if eventEndDate
-    eventData.description = "Task link: https://www.wrike.com/open.htm?id=#{@_task.data.id}"
+    # eventData.description = "Task link: https://www.wrike.com/open.htm?id=#{@_task.data.id}"
 
     eventData.reminders = { useDefault: no, overrides: reminders } if reminders
 
@@ -154,10 +154,26 @@ class Reminder
     if @exists()
       @_updateEvent null, null, @_reminderData.calendarId, null, ->
 
+  getIdFromLink: (link) ->
+    matches = link.match /eid=([^&#]+)/
+    if matches then matches[1] else ''
+
   _save: (newEvent, calendarId, callback) ->
     @_reminderData = {event: newEvent, calendarId}
+
+    dataToSave = {
+      taskId: @_task.data.id,
+      taskTitle: @_task.data.title,
+      calendarId
+      eventId: newEvent.id,
+      htmlLink: newEvent.htmlLink,
+      hangoutLink: newEvent.hangoutLink,
+    }
     @_defaultSettings = { calendarId }
-    app.api.companyData.set @_task.data.id, {eventId: newEvent.id, calendarId}, =>
-      app.api.userData.set "defaultSettings", @_defaultSettings, -> callback()
+    app.api.companyData.set @_task.data.id, dataToSave, =>
+      app.api.userData.set "defaultSettings", @_defaultSettings, =>
+        callback()
+        app.api.companyData.set @getIdFromLink(newEvent.htmlLink), dataToSave, ->
+        app.api.companyData.set @getIdFromLink(newEvent.hangoutLink), dataToSave, ->
 
 module.exports = Reminder

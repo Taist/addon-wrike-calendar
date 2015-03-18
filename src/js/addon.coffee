@@ -4,15 +4,33 @@ Reminder = require './reminder'
 
 reactContainer = null
 
-start = (taistApi) ->
+start = (taistApi, entryPoint) ->
   window.app = app = require './app'
   app.api = taistApi
 
-  reactContainer = $ '<div>'
+  if entryPoint is 'wrike'
+    reactContainer = $ '<div>'
 
-  calendarUtils.init ->
-    wrikeUtils.onCurrentTaskChange (task) -> draw task
-    wrikeUtils.onCurrentTaskSave (updatedTask) -> updateReminderForTask updatedTask
+    calendarUtils.init ->
+      wrikeUtils.onCurrentTaskChange (task) -> draw task
+      wrikeUtils.onCurrentTaskSave (updatedTask) -> updateReminderForTask updatedTask
+
+  else if entryPoint is 'google'
+    taistApi.wait.elementRender '[data-eid]', (element) ->
+      eventId = element.attr('data-eid');
+      if location.href.indexOf(eventId) > 0
+        taistApi.companyData.get eventId, (error, event) ->
+          hangoutLink = $ "[href*='#{event.eventId}']"
+          tableRow = hangoutLink.parents 'tr:first'
+          container = tableRow.clone().insertAfter tableRow
+          $('th label', container).text 'Wrike task'
+
+          wrikeLink = $('<a>')
+          .attr 'href', "https://www.wrike.com/workspace.htm#&t=#{event.taskId}"
+          .attr 'target', event.taskId
+          .addClass 'taist-calendar-link' 
+          .text event.taskTitle or 'Wrike task'
+          $('td div', container).empty().append wrikeLink
 
 draw = (task) ->
   # if wrikeUtils.currentUserIsResponsibleForTask task

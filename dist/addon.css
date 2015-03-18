@@ -18,6 +18,13 @@ div.taist-link-background:hover {
 	font-size: 12px;
 }
 
+.taist-calendar-link {
+	text-decoration: none
+}
+
+.taist-calendar-link:hover {
+	text-decoration: underline 
+}
 
 .taist-reminders-container input{
 	font-size: 12px;

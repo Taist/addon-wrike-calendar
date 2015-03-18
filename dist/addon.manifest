@@ -3,12 +3,18 @@
   "title": "Calendar",
   "shortDescription": "Allows to schedule specific time slots and reminders for tasks via integration with Google Calendar",
   "siteName": "Wrike",
-  "siteRegexp": "wrike.com",
+  "siteRegexp": "(wrike\\.com|google\\.\\w{2,4})",
   "js": "addon.js",
   "css": "addon.css",
   "description": "./addon-description.md",
-  "pages": [{
-    "path": "^/workspace",
-    "entryPoint": "common"
-  }]
+  "pages": [
+    {
+      "path": "^/workspace",
+      "entryPoint": "wrike"
+    },
+    {
+      "path": "^/calendar/",
+      "entryPoint": "google"
+    }
+  ]
 }
