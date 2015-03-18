@@ -25339,7 +25339,7 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":55}],"addon":[function(require,module,exports){
-var Reminder, calendarUtils, draw, reactContainer, start, updateReminderForTask, wrikeUtils;
+var Reminder, calendarUtils, draw, reactContainer, renderInProgress, renderLinkOnEditPage, start, updateReminderForTask, waitForEventContainer, wrikeUtils;
 
 wrikeUtils = require('./wrikeUtils');
 
@@ -25364,21 +25364,44 @@ start = function(taistApi, entryPoint) {
       });
     });
   } else if (entryPoint === 'google') {
-    return taistApi.wait.elementRender('[data-eid]', function(element) {
-      var eventId;
-      eventId = element.attr('data-eid');
-      if (location.href.indexOf(eventId) > 0) {
-        return taistApi.companyData.get(eventId, function(error, event) {
-          var container, hangoutLink, tableRow, wrikeLink;
-          hangoutLink = $("[href*='" + event.eventId + "']");
-          tableRow = hangoutLink.parents('tr:first');
-          container = tableRow.clone().insertAfter(tableRow);
-          $('th label', container).text('Wrike task');
-          wrikeLink = $('<a>').attr('href', "https://www.wrike.com/workspace.htm#&t=" + event.taskId).attr('target', event.taskId).addClass('taist-calendar-link').text(event.taskTitle || 'Wrike task');
-          return $('td div', container).empty().append(wrikeLink);
-        });
-      }
-    });
+    waitForEventContainer('[data-eid]');
+    return waitForEventContainer('.bubblemain:visible');
+  }
+};
+
+renderInProgress = false;
+
+waitForEventContainer = function(selector) {
+  return app.api.wait.repeat(function() {
+    var shouldStartRendering;
+    shouldStartRendering = $(selector).length > 0 && $('.taist-calendar-link', selector).length === 0 && renderInProgress === false;
+    if (shouldStartRendering) {
+      renderInProgress = true;
+    }
+    return shouldStartRendering;
+  }, function(container) {
+    return renderLinkOnEditPage(container);
+  });
+};
+
+renderLinkOnEditPage = function(container) {
+  var hangoutId, hangoutLink, matches, ref;
+  if (location.href.indexOf('/calendar/') > 0) {
+    hangoutLink = $("[href*='hceid=']", container);
+    matches = hangoutLink != null ? (ref = hangoutLink.attr('href')) != null ? ref.match(/hceid=([^&#]+)/) : void 0 : void 0;
+    hangoutId = matches != null ? matches[1] : void 0;
+    if (hangoutId) {
+      return app.api.companyData.get(hangoutId, function(error, event) {
+        var tableRow, wrikeLabel, wrikeLink, wrikeLinkContainer;
+        tableRow = hangoutLink.parents('tr:first');
+        wrikeLinkContainer = tableRow.clone().insertAfter(tableRow);
+        wrikeLabel = $('<div>').addClass('rtc-label').text('Wrike task');
+        $('th', wrikeLinkContainer).empty().append(wrikeLabel);
+        wrikeLink = $('<a>').attr('href', "https://www.wrike.com/workspace.htm#t=" + event.taskId).attr('target', event.taskId).addClass('taist-calendar-link').text(event.taskTitle || 'Wrike task');
+        $('td', wrikeLinkContainer).empty().append(wrikeLink);
+        return renderInProgress = false;
+      });
+    }
   }
 };
 

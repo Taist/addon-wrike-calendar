@@ -16,21 +16,45 @@ start = (taistApi, entryPoint) ->
       wrikeUtils.onCurrentTaskSave (updatedTask) -> updateReminderForTask updatedTask
 
   else if entryPoint is 'google'
-    taistApi.wait.elementRender '[data-eid]', (element) ->
-      eventId = element.attr('data-eid');
-      if location.href.indexOf(eventId) > 0
-        taistApi.companyData.get eventId, (error, event) ->
-          hangoutLink = $ "[href*='#{event.eventId}']"
-          tableRow = hangoutLink.parents 'tr:first'
-          container = tableRow.clone().insertAfter tableRow
-          $('th label', container).text 'Wrike task'
+    waitForEventContainer '[data-eid]'
+    waitForEventContainer '.bubblemain:visible'
 
-          wrikeLink = $('<a>')
-          .attr 'href', "https://www.wrike.com/workspace.htm#&t=#{event.taskId}"
-          .attr 'target', event.taskId
-          .addClass 'taist-calendar-link' 
-          .text event.taskTitle or 'Wrike task'
-          $('td div', container).empty().append wrikeLink
+renderInProgress = no
+
+waitForEventContainer = (selector) ->
+  app.api.wait.repeat ->
+    shouldStartRendering = $(selector).length > 0 and
+    $('.taist-calendar-link', selector).length is 0 and
+    renderInProgress is no
+
+    renderInProgress = yes if shouldStartRendering
+
+    return shouldStartRendering
+
+  , (container) ->
+    renderLinkOnEditPage container
+
+renderLinkOnEditPage = (container) ->
+  if location.href.indexOf('/calendar/') > 0
+    hangoutLink = $ "[href*='hceid=']", container
+    matches = hangoutLink?.attr('href')?.match /hceid=([^&#]+)/
+    hangoutId = matches?[1]
+
+    if hangoutId
+      app.api.companyData.get hangoutId, (error, event) ->
+        tableRow = hangoutLink.parents 'tr:first'
+        wrikeLinkContainer = tableRow.clone().insertAfter tableRow
+        wrikeLabel = $('<div>').addClass('rtc-label').text('Wrike task')
+        $('th', wrikeLinkContainer).empty().append wrikeLabel
+
+        wrikeLink = $('<a>')
+        .attr 'href', "https://www.wrike.com/workspace.htm#t=#{event.taskId}"
+        .attr 'target', event.taskId
+        .addClass 'taist-calendar-link'
+        .text event.taskTitle or 'Wrike task'
+        $('td', wrikeLinkContainer).empty().append wrikeLink
+
+        renderInProgress = no
 
 draw = (task) ->
   # if wrikeUtils.currentUserIsResponsibleForTask task
