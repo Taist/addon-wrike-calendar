@@ -25400,12 +25400,14 @@ renderLinkOnEditPage = function(container) {
     if (hangoutId) {
       return app.api.companyData.get(hangoutId, function(error, event) {
         var renderInProgress, tableRow, wrikeLabel, wrikeLink, wrikeLinkContainer;
-        tableRow = hangoutLink.parents('tr:first');
-        wrikeLinkContainer = tableRow.clone().insertAfter(tableRow);
-        wrikeLabel = $('<div>').addClass('rtc-label').text('Wrike task');
-        $('th', wrikeLinkContainer).empty().append(wrikeLabel);
-        wrikeLink = $('<a>').attr('href', "https://www.wrike.com/workspace.htm#t=" + event.taskId + "&f=").attr('target', event.taskId).addClass('taist-calendar-link').text(event.taskTitle || 'Wrike task');
-        $('td', wrikeLinkContainer).empty().append(wrikeLink);
+        if (event) {
+          tableRow = hangoutLink.parents('tr:first');
+          wrikeLinkContainer = tableRow.clone().insertAfter(tableRow);
+          wrikeLabel = $('<div>').addClass('rtc-label').text('Wrike task');
+          $('th', wrikeLinkContainer).empty().append(wrikeLabel);
+          wrikeLink = $('<a>').attr('href', "https://www.wrike.com/workspace.htm#t=" + event.taskId + "&f=").attr('target', event.taskId).addClass('taist-calendar-link').text(event.taskTitle || 'Wrike task');
+          $('td', wrikeLinkContainer).empty().append(wrikeLink);
+        }
         return renderInProgress = false;
       });
     }

@@ -43,17 +43,18 @@ renderLinkOnEditPage = (container) ->
 
     if hangoutId
       app.api.companyData.get hangoutId, (error, event) ->
-        tableRow = hangoutLink.parents 'tr:first'
-        wrikeLinkContainer = tableRow.clone().insertAfter tableRow
-        wrikeLabel = $('<div>').addClass('rtc-label').text('Wrike task')
-        $('th', wrikeLinkContainer).empty().append wrikeLabel
+        if event
+          tableRow = hangoutLink.parents 'tr:first'
+          wrikeLinkContainer = tableRow.clone().insertAfter tableRow
+          wrikeLabel = $('<div>').addClass('rtc-label').text('Wrike task')
+          $('th', wrikeLinkContainer).empty().append wrikeLabel
 
-        wrikeLink = $('<a>')
-        .attr 'href', "https://www.wrike.com/workspace.htm#t=#{event.taskId}&f="
-        .attr 'target', event.taskId
-        .addClass 'taist-calendar-link'
-        .text event.taskTitle or 'Wrike task'
-        $('td', wrikeLinkContainer).empty().append wrikeLink
+          wrikeLink = $('<a>')
+          .attr 'href', "https://www.wrike.com/workspace.htm#t=#{event.taskId}&f="
+          .attr 'target', event.taskId
+          .addClass 'taist-calendar-link'
+          .text event.taskTitle or 'Wrike task'
+          $('td', wrikeLinkContainer).empty().append wrikeLink
 
         renderInProgress = no
 
