@@ -17,21 +17,22 @@ start = (taistApi, entryPoint) ->
 
   else if entryPoint is 'google'
     waitForEventContainer '[data-eid]'
-    waitForEventContainer '.bubblemain:visible'
+    waitForEventContainer '.bubblemain'
 
-renderInProgress = no
+observer = new MutationObserver (mutations) ->
+  mutations.forEach (mutation) ->
+    if mutation.target.className is 'bubblecontent'
+      renderLinkOnEditPage mutation.target
+
+observerConfig = {
+  childList: true
+  subtree: true
+}
 
 waitForEventContainer = (selector) ->
-  app.api.wait.repeat ->
-    shouldStartRendering = $(selector).length > 0 and
-    $('.taist-calendar-link', selector).length is 0 and
-    renderInProgress is no
-
-    renderInProgress = yes if shouldStartRendering
-
-    return shouldStartRendering
-
-  , (container) ->
+  app.api.wait.elementRender selector, (container) ->
+    if selector is '.bubblemain'
+      observer.observe container.get(0), observerConfig
     renderLinkOnEditPage container
 
 renderLinkOnEditPage = (container) ->
@@ -48,7 +49,7 @@ renderLinkOnEditPage = (container) ->
         $('th', wrikeLinkContainer).empty().append wrikeLabel
 
         wrikeLink = $('<a>')
-        .attr 'href', "https://www.wrike.com/workspace.htm#t=#{event.taskId}"
+        .attr 'href', "https://www.wrike.com/workspace.htm#t=#{event.taskId}&f="
         .attr 'target', event.taskId
         .addClass 'taist-calendar-link'
         .text event.taskTitle or 'Wrike task'
