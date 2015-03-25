@@ -1,10 +1,10 @@
-You can schedule specific time slot and set reminders for a task directly from its page.
-
-Addon will create corresponding event in Google Calendar automatically with "[Wrike]" prefix.
+Addon allows to schedule specific time slot and set reminders directly from a task page - an event will be created in Google Calendar automatically with "[Wrike]" prefix.
 
 You can change scheduled event both in Wrike and in Google Calendar.
 
 You can choose the calendar to use, set reminders via SMS or email.
+
+You can quickly jump from Wrike task to event in calendar and back - addon adds links both to Wrike and to Google Calendar.
  
 Typical use cases:
 
