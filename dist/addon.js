@@ -1046,6 +1046,7 @@ Reminder = (function() {
         _this._defaultSettings = defaultSettingsData;
         return app.api.companyData.get(_this._task.data.id, function(error, existingReminderData) {
           var calendarId, calendarsIndex, event, eventId, i, len, ref;
+          console.log('existingReminderData', existingReminderData);
           calendarsIndex = {};
           Reminder._calendarsList.forEach(function(calendar) {
             return calendarsIndex[calendar.id] = true;

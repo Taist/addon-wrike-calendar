@@ -34,6 +34,8 @@ class Reminder
       @_defaultSettings = defaultSettingsData
 
       app.api.companyData.get @_task.data.id, (error, existingReminderData) =>
+        console.log 'existingReminderData', existingReminderData
+
         calendarsIndex = {}
         Reminder._calendarsList.forEach (calendar) ->
           calendarsIndex[calendar.id] = true
