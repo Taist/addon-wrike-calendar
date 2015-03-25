@@ -1045,9 +1045,29 @@ Reminder = (function() {
         }
         _this._defaultSettings = defaultSettingsData;
         return app.api.companyData.get(_this._task.data.id, function(error, existingReminderData) {
-          var calendarId, eventId;
-          eventId = existingReminderData != null ? existingReminderData.eventId : void 0;
-          calendarId = existingReminderData != null ? existingReminderData.calendarId : void 0;
+          var calendarId, calendarsIndex, event, eventId, i, len, ref;
+          calendarsIndex = {};
+          Reminder._calendarsList.forEach(function(calendar) {
+            return calendarsIndex[calendar.id] = true;
+          });
+          if (existingReminderData) {
+            if (existingReminderData.events) {
+              ref = existingReminderData.events;
+              for (i = 0, len = ref.length; i < len; i++) {
+                event = ref[i];
+                if (calendarsIndex[event.calendarId] === true) {
+                  eventId = event.eventId;
+                  calendarId = event.calendarId;
+                  break;
+                }
+              }
+            } else {
+              if (calendarsIndex[existingReminderData != null ? existingReminderData.calendarId : void 0] === true) {
+                eventId = existingReminderData.eventId;
+                calendarId = existingReminderData.calendarId;
+              }
+            }
+          }
           if ((eventId == null) || (calendarId == null)) {
             return callback();
           } else {
@@ -1215,12 +1235,12 @@ Reminder = (function() {
   };
 
   Reminder.prototype._save = function(newEvent, calendarId, callback) {
-    var dataToSave;
+    var eventData, eventDataToSave, taskDataToSave;
     this._reminderData = {
       event: newEvent,
       calendarId: calendarId
     };
-    dataToSave = {
+    eventDataToSave = {
       taskId: this._task.data.id,
       taskTitle: this._task.data.title,
       calendarId: calendarId,
@@ -1228,15 +1248,63 @@ Reminder = (function() {
       htmlLink: newEvent.htmlLink,
       hangoutLink: newEvent.hangoutLink
     };
-    this._defaultSettings = {
-      calendarId: calendarId
+    eventData = {
+      calendarId: calendarId,
+      eventId: newEvent.id,
+      htmlLink: newEvent.htmlLink
     };
-    return app.api.companyData.set(this._task.data.id, dataToSave, (function(_this) {
-      return function() {
-        return app.api.userData.set("defaultSettings", _this._defaultSettings, function() {
-          callback();
-          app.api.companyData.set(_this.getIdFromLink(newEvent.htmlLink), dataToSave, function() {});
-          return app.api.companyData.set(_this.getIdFromLink(newEvent.hangoutLink), dataToSave, function() {});
+    if (newEvent.hangoutLink) {
+      eventData.hangoutLink = newEvent.hangoutLink;
+    }
+    taskDataToSave = {
+      taskId: this._task.data.id,
+      taskTitle: this._task.data.title,
+      events: [eventData]
+    };
+    return app.api.companyData.get(this._task.data.id, (function(_this) {
+      return function(error, existingReminderData) {
+        var eventFound, storedEvents;
+        if (existingReminderData) {
+          storedEvents = existingReminderData != null ? existingReminderData.events : void 0;
+          if (!storedEvents) {
+            storedEvents = [
+              {
+                calendarId: existingReminderData.calendarId,
+                eventId: existingReminderData.eventId,
+                htmlLink: existingReminderData.htmlLink,
+                hangoutLink: existingReminderData.hangoutLink
+              }
+            ];
+          }
+          eventFound = false;
+          storedEvents = storedEvents.map(function(event) {
+            if (event.eventId === eventData.eventId) {
+              eventFound = true;
+              return eventData;
+            } else {
+              return event;
+            }
+          });
+          if (!eventFound) {
+            storedEvents.push(eventData);
+          }
+          taskDataToSave.events = storedEvents;
+        }
+        console.log(existingReminderData);
+        console.log(taskDataToSave);
+        _this._defaultSettings = {
+          calendarId: calendarId
+        };
+        return app.api.companyData.set(_this._task.data.id, taskDataToSave, function() {
+          return app.api.userData.set("defaultSettings", _this._defaultSettings, function() {
+            callback();
+            if (newEvent.htmlLink) {
+              app.api.companyData.set(_this.getIdFromLink(newEvent.htmlLink), eventDataToSave, function() {});
+            }
+            if (newEvent.hangoutLink) {
+              return app.api.companyData.set(_this.getIdFromLink(newEvent.hangoutLink), eventDataToSave, function() {});
+            }
+          });
         });
       };
     })(this));

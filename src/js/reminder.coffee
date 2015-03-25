@@ -34,8 +34,21 @@ class Reminder
       @_defaultSettings = defaultSettingsData
 
       app.api.companyData.get @_task.data.id, (error, existingReminderData) =>
-        eventId = existingReminderData?.eventId
-        calendarId = existingReminderData?.calendarId
+        calendarsIndex = {}
+        Reminder._calendarsList.forEach (calendar) ->
+          calendarsIndex[calendar.id] = true
+
+        if existingReminderData
+          if existingReminderData.events
+            for event in existingReminderData.events
+              if calendarsIndex[event.calendarId] is true
+                eventId = event.eventId
+                calendarId = event.calendarId
+                break
+          else
+            if calendarsIndex[existingReminderData?.calendarId] is true
+              eventId = existingReminderData.eventId
+              calendarId = existingReminderData.calendarId
 
         if not eventId? or not calendarId?
           callback()
@@ -161,19 +174,62 @@ class Reminder
   _save: (newEvent, calendarId, callback) ->
     @_reminderData = {event: newEvent, calendarId}
 
-    dataToSave = {
+    eventDataToSave = {
+      taskId: @_task.data.id
+      taskTitle: @_task.data.title
+      calendarId
+      eventId: newEvent.id
+      htmlLink: newEvent.htmlLink
+      hangoutLink: newEvent.hangoutLink
+    }
+
+    eventData =
+      calendarId: calendarId
+      eventId: newEvent.id
+      htmlLink: newEvent.htmlLink
+
+    eventData.hangoutLink = newEvent.hangoutLink if newEvent.hangoutLink
+
+    taskDataToSave = {
       taskId: @_task.data.id,
       taskTitle: @_task.data.title,
-      calendarId
-      eventId: newEvent.id,
-      htmlLink: newEvent.htmlLink,
-      hangoutLink: newEvent.hangoutLink,
+      events: [ eventData ]
     }
-    @_defaultSettings = { calendarId }
-    app.api.companyData.set @_task.data.id, dataToSave, =>
-      app.api.userData.set "defaultSettings", @_defaultSettings, =>
-        callback()
-        app.api.companyData.set @getIdFromLink(newEvent.htmlLink), dataToSave, ->
-        app.api.companyData.set @getIdFromLink(newEvent.hangoutLink), dataToSave, ->
+
+    app.api.companyData.get @_task.data.id, (error, existingReminderData) =>
+      if existingReminderData
+        storedEvents = existingReminderData?.events
+        unless storedEvents
+          storedEvents = [{
+            calendarId: existingReminderData.calendarId
+            eventId: existingReminderData.eventId
+            htmlLink: existingReminderData.htmlLink
+            hangoutLink: existingReminderData.hangoutLink
+          }]
+
+        eventFound = false
+        storedEvents = storedEvents.map (event) ->
+          if event.eventId is eventData.eventId
+            eventFound = true
+            eventData
+          else
+            event
+
+        unless eventFound
+          storedEvents.push eventData
+
+        taskDataToSave.events = storedEvents
+
+      console.log existingReminderData
+      console.log taskDataToSave
+
+      @_defaultSettings = { calendarId }
+      app.api.companyData.set @_task.data.id, taskDataToSave, =>
+        app.api.userData.set "defaultSettings", @_defaultSettings, =>
+          callback()
+          if newEvent.htmlLink
+            app.api.companyData.set @getIdFromLink(newEvent.htmlLink), eventDataToSave, ->
+          if newEvent.hangoutLink
+            app.api.companyData.set @getIdFromLink(newEvent.hangoutLink), eventDataToSave, ->
 
 module.exports = Reminder
