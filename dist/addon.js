@@ -1201,6 +1201,7 @@ Reminder = (function() {
         dateTime: eventEndDate
       };
     }
+    eventData.description = "Wrike task: https://www.wrike.com/open.htm?id=" + this._task.data.id;
     if (reminders) {
       eventData.reminders = {
         useDefault: false,
