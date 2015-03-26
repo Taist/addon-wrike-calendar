@@ -35,12 +35,12 @@ TimeIntervalSelector = React.createFactory React.createClass
     div { style: display: 'inline-block' },
       div { style: marginLeft: 12, display: 'inline-block' },
         TimeSelector
-          width: 48
+          width: 68
           currentValue: @state.startTime
           onChange: @onStartChange
       div { style: marginLeft: 8, display: 'inline-block' },
         TimeSelector
-          width: 48
+          width: 68
           currentValue: @state.endTime
           startTime: @state.startTime
           duration: true

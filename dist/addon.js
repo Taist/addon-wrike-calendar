@@ -870,7 +870,7 @@ TimeIntervalSelector = React.createFactory(React.createClass({
         display: 'inline-block'
       }
     }, TimeSelector({
-      width: 48,
+      width: 68,
       currentValue: this.state.startTime,
       onChange: this.onStartChange
     })), div({
@@ -879,7 +879,7 @@ TimeIntervalSelector = React.createFactory(React.createClass({
         display: 'inline-block'
       }
     }, TimeSelector({
-      width: 48,
+      width: 68,
       currentValue: this.state.endTime,
       startTime: this.state.startTime,
       duration: true,
@@ -939,10 +939,18 @@ TimeSelector = React.createFactory(React.createClass({
     return hours * 60 + minutes - minutes % this.minimalInterval;
   },
   minutesToTimeString: function(minutes) {
+    var language, tempDate, time, timeOptions;
     if (minutes == null) {
       minutes = 0;
     }
-    return (Math.floor(minutes / 60)) + ":" + (minutes % 60 < 10 ? 0 : '') + (minutes % 60);
+    tempDate = new Date(2015, 3, 26, Math.floor(minutes / 60), minutes % 60, 0);
+    timeOptions = {
+      hour: 'numeric',
+      minute: '2-digit'
+    };
+    language = navigator.language || 'en';
+    time = tempDate.toLocaleString(language, timeOptions);
+    return time.toLowerCase();
   },
   minutesToDuration: function(minutes) {
     var duration;

@@ -37,7 +37,13 @@ TimeSelector = React.createFactory React.createClass
     hours * 60 + minutes - minutes % @minimalInterval
 
   minutesToTimeString: ( minutes = 0 ) ->
-    "#{Math.floor(minutes / 60)}:#{if minutes % 60 < 10 then 0 else ''}#{minutes % 60}"
+    tempDate = new Date(2015, 3, 26, Math.floor(minutes / 60), minutes % 60, 0)
+    timeOptions =
+      hour: 'numeric'
+      minute: '2-digit'
+    language = navigator.language or 'en'
+    time = tempDate.toLocaleString(language, timeOptions)
+    time.toLowerCase();
 
   minutesToDuration: ( minutes = 0 ) ->
     duration = if minutes < 60
