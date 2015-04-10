@@ -1067,7 +1067,6 @@ Reminder = (function() {
                 if (calendarsIndex[event.calendarId] === true) {
                   eventId = event.eventId;
                   calendarId = event.calendarId;
-                  break;
                 }
               }
             } else {

@@ -46,7 +46,6 @@ class Reminder
               if calendarsIndex[event.calendarId] is true
                 eventId = event.eventId
                 calendarId = event.calendarId
-                break
           else
             if calendarsIndex[existingReminderData?.calendarId] is true
               eventId = existingReminderData.eventId
