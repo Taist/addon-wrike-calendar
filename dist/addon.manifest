@@ -3,7 +3,7 @@
   "title": "Calendar",
   "shortDescription": "Allows to schedule specific time slots and reminders for tasks via integration with Google Calendar",
   "siteName": "Wrike",
-  "siteRegexp": "(wrike\\.com|google\\.\\w{2,4})",
+  "siteRegexp": "(wrike\\.com|google\\.\\w{2,4}\/calendar)",
   "js": "addon.js",
   "css": "addon.css",
   "description": "./addon-description.md",

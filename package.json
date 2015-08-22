@@ -1,6 +1,6 @@
 {
   "name": "taist-wrike-reminders",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Vladimir Rybakov",
   "description": "Taist bootstrap addon",
   "dependencies": {
